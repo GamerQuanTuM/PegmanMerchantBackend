@@ -1,8 +1,9 @@
 import { relations } from "drizzle-orm";
 import { pgTable, varchar, uuid, integer, timestamp } from "drizzle-orm/pg-core";
-import { outlet } from "./outlet.schema";
+
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { outlet } from "./outlet.schema";
 
 export const owner = pgTable("owner", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -20,7 +21,7 @@ export const ownerRelations = relations(owner, ({ many }) => ({
 
 export type Owner = typeof owner.$inferSelect;
 
-const baseOwnerSchema = createSelectSchema(owner).pick({
+export const baseOwnerSchema = createSelectSchema(owner).pick({
     mobileNumber: true,
     isdCode: true,
 });

@@ -22,3 +22,8 @@ export const roleEnum = pgEnum('role', [
     "MANAGER",
     "USER"
 ])
+
+export const accountTypeEnum = pgEnum('account_type', [
+    "SAVINGS",
+    "CURRENT"
+])

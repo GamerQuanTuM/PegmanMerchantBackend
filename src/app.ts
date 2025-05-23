@@ -3,6 +3,7 @@ import configureOpenAPI from "./lib/configure-openapi.js";
 import healthcheck from "./routes/index.route"
 import authRouter from "./routes/auth/auth.index";
 import ownerRouter from "./routes/owner/owner.index";
+import outletRouter from "./routes/outlet/outlet.index";
 // import { elasticsearchMiddleware } from "./helpers/elastic-search.js";
 
 
@@ -16,7 +17,8 @@ const app = createApp();
 const routes = [
     healthcheck,
     authRouter,
-    ownerRouter
+    ownerRouter,
+    outletRouter
 ] as const;
 
 routes.forEach((route) => {
