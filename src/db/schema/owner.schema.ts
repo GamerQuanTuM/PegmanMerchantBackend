@@ -21,18 +21,20 @@ export const ownerRelations = relations(owner, ({ many }) => ({
 
 export type Owner = typeof owner.$inferSelect;
 
-export const baseOwnerSchema = createSelectSchema(owner).pick({
+export const selectOwnerSchema = createSelectSchema(owner)
+
+export const ownerOtpSchema = selectOwnerSchema.pick({
     mobileNumber: true,
     isdCode: true,
 });
 
-export const selectOwnerSchema = baseOwnerSchema.extend({
+export const selectOtpSchema = ownerOtpSchema.extend({
     otp: z.string(),
 });
 
 export const ownerResponseSchema = z.object({
     message: z.string(),
-    data: baseOwnerSchema
+    data: ownerOtpSchema
 })
 
 export const updateOwnerSchema = createSelectSchema(owner).omit({
@@ -45,3 +47,4 @@ export const updateOwnerResponseSchema = z.object({
     message: z.string(),
     data: updateOwnerSchema
 })
+

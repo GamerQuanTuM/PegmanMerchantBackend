@@ -1,7 +1,7 @@
 import { pgTable, uuid, timestamp, boolean, time } from "drizzle-orm/pg-core";
 import { establishmentTypeEnum } from "./enums";
 import { z } from "zod";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const outletTiming = pgTable("outlet_timing", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -49,3 +49,10 @@ export const insertOutletTimingSchema = createInsertSchema(outletTiming, {
     message: "Weekend closing time must be after opening time",
     path: ["weekendClosingTime"],
   });
+
+export const selectOutletTimingSchema = createSelectSchema(outletTiming);
+
+export const outletTimingResponseSchema = z.object({
+    message: z.string(),
+    data: selectOutletTimingSchema,
+});

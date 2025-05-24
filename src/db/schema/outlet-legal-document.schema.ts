@@ -1,6 +1,6 @@
 import { pgTable, varchar, uuid, timestamp, text } from "drizzle-orm/pg-core";
 import { z } from "zod";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { accountTypeEnum } from "./enums";
 
 export const outletLegalDocument = pgTable("outlet_legal_document", {
@@ -25,6 +25,7 @@ export const insertOutletLegalDocumentSchema = createInsertSchema(outletLegalDoc
   gstNumber: z.string().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/, "Invalid GST number format"),
   bankAccountNumber: z.string().min(9, "Bank account number too short").max(30, "Bank account number too long").optional(),
   bankIfscCode: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format").optional(),
+  bankAccountType: z.enum(accountTypeEnum.enumValues),
 }).omit({
   id: true,
   createdAt: true,
@@ -33,4 +34,16 @@ export const insertOutletLegalDocumentSchema = createInsertSchema(outletLegalDoc
   onShopLicenseUrl: true,
   offShopLicenseUrl: true,
   panCardUrl: true,
+}).extend({
+  fssaiImage: z.any(),
+  onShopLicenseImage: z.any(),
+  offShopLicenseImage: z.any().optional(),
+  panCardImage: z.any(),
+})
+
+export const selectOutletLegalDocumentsSchema = createSelectSchema(outletLegalDocument);
+
+export const outletLegalDocumentsResponseSchema = z.object({
+  message: z.string(),
+  data: selectOutletLegalDocumentsSchema,
 });

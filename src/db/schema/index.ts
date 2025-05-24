@@ -2,7 +2,7 @@ export * from './user.schema';
 export * from "./owner.schema";
 export * from "./outlet.schema";
 export * from "./outlet-details.schema";
-export * from "./outlet_legal_document.schema";
+export * from "./outlet-legal-document.schema";
 export * from "./outlet-manager.schema";
 export * from "./outlet-timing.schema";
 export * from "./outlet-bartender.schema";

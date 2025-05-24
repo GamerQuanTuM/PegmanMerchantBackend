@@ -1,19 +1,17 @@
-// outlet.schema.ts (Main table with all relations)
 import { relations } from "drizzle-orm";
-import { pgTable, uuid, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { insertOutletsDetailsSchema, outletsDetails } from "./outlet-details.schema";
-import { insertOutletLegalDocumentSchema, outletLegalDocument } from "./outlet_legal_document.schema";
-import { insertOutletManagerSchema, outletManager } from "./outlet-manager.schema";
-import { insertOutletTimingSchema, outletTiming } from "./outlet-timing.schema";
-import { insertOutletBartenderSchema, outletBartender } from "./outlet-bartender.schema";
-import { owner } from "./owner.schema";
+import { owner, selectOwnerSchema } from "./owner.schema";
+import { outletsDetails, selectOutletsDetailsSchema } from "./outlet-details.schema";
+import { outletLegalDocument, selectOutletLegalDocumentsSchema } from "./outlet-legal-document.schema";
+import { outletManager, selectOutletManagerSchema } from "./outlet-manager.schema";
+import { outletTiming, selectOutletTimingSchema } from "./outlet-timing.schema";
+import { outletBartender, selectOutletBartenderSchema } from "./outlet-bartender.schema";
 
 export const outlet = pgTable("outlet", {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: varchar("name", { length: 255 }),
     ownerId: uuid("owner_id").references(() => owner.id),
     isVerified: boolean().default(false),
     detailsId: uuid("details_id").references(() => outletsDetails.id),
@@ -23,6 +21,16 @@ export const outlet = pgTable("outlet", {
     bartenderId: uuid("bartender_id").references(() => outletBartender.id),
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
+});
+// Doing these is a workaround to avoid circular dependency.
+const ownerSchema = z.object({
+    id: z.string(),
+    name: z.string().nullable(),
+    email: z.string().nullable(),
+    isdCode: z.number().nullable(),
+    mobileNumber: z.string(),
+    createdAt: z.date().nullable(),
+    updatedAt: z.date().nullable(),
 });
 
 export const outletRelations = relations(outlet, ({ one }) => ({
@@ -53,8 +61,12 @@ export const outletRelations = relations(outlet, ({ one }) => ({
 }));
 
 export const insertOutletSchema = createInsertSchema(outlet, {
-    name: z.string().min(1, "Outlet name is required").max(255),
-    isVerified: z.boolean().default(false),
+    ownerId: z.string().uuid(),
+    detailsId: z.string().uuid(),
+    legalDocumentId: z.string().uuid(),
+    managerId: z.string().uuid(),
+    timingId: z.string().uuid(),
+    bartenderId: z.string().uuid().optional(),
 })
     .omit({
         id: true,
@@ -63,35 +75,36 @@ export const insertOutletSchema = createInsertSchema(outlet, {
         isVerified: true,
     })
 
-export const outletCreationSchema = z.object({
-    outlet: insertOutletSchema.omit({
-        detailsId: true,
-        legalDocumentId: true,
-        managerId: true,
-        timingId: true,
-        bartenderId: true,
-    }),
-    details: insertOutletsDetailsSchema,
-    legalDocument: insertOutletLegalDocumentSchema,
-    manager: insertOutletManagerSchema,
-    timing: insertOutletTimingSchema,
-    bartender: insertOutletBartenderSchema.optional(),
+export const selectOutletSchema = createSelectSchema(outlet)
+
+export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
+    ownerId: true,
+    detailsId: true,
+    legalDocumentId: true,
+    managerId: true,
+    timingId: true,
+    bartenderId: true,
 }).extend({
-    outletImages: z
-        .array(z.any())
-        .min(1, "At least one outlet image is required")
-        .max(2, "You can upload a maximum of 2 images"),
-    fssaiImages: z.any(),
-    panCardImages: z.any(),
-    onShopLicenseImages: z.any(),
-    offShopLicenseImages: z.any().optional(),
+    owner: ownerSchema.nullable(),
+    details: selectOutletsDetailsSchema.nullable(),
+    legalDocument: selectOutletLegalDocumentsSchema.nullable(),
+    manager: selectOutletManagerSchema.nullable(),
+    bartender: selectOutletBartenderSchema.nullable(),
+    timing: selectOutletTimingSchema.nullable(),
+})
+
+export const outletResponseSchemaWithRelations = z.object({
+    message: z.string(),
+    data: selectOutletSchemaWithRelations,
 });
 
 export const outletResponseSchema = z.object({
     message: z.string(),
-    data: createSelectSchema(outlet),
+    data: selectOutletSchema,
 });
 
-export type Outlet = typeof outlet.$inferSelect;
-export type InsertOutlet = typeof outlet.$inferInsert;
-export type OutletCreation = z.infer<typeof outletCreationSchema>;
+export const updateVerifyOutletSchema = selectOutletSchema.pick({
+    isVerified: true,
+})
+
+

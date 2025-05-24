@@ -3,7 +3,7 @@ import * as HttpStatusCode from "stoker/http-status-codes"
 import { createErrorSchema, createMessageObjectSchema, } from "stoker/openapi/schemas";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { jsonContent } from "stoker/openapi/helpers";
-import { baseOwnerSchema, selectOwnerSchema, ownerResponseSchema } from "@/db/schema/owner.schema";
+import { ownerOtpSchema, selectOtpSchema, ownerResponseSchema } from "@/db/schema/owner.schema";
 import protect from "@/middlewares/protect";
 
 // Owner generate otp
@@ -42,7 +42,7 @@ export const signup = createRoute({
     path: "/signup",
     method: "post",
     request: {
-        body: jsonContent(selectOwnerSchema, "Sign up request"),
+        body: jsonContent(selectOtpSchema, "Sign up request"),
 
     },
     responses: {
@@ -51,7 +51,7 @@ export const signup = createRoute({
             "Sign up success"
         ),
         [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(baseOwnerSchema),
+            createErrorSchema(ownerOtpSchema),
             "Validation error",
         ),
         [HttpStatusCode.BAD_REQUEST]: jsonContent(
@@ -71,7 +71,7 @@ export const login = createRoute({
     path: "/login",
     method: "post",
     request: {
-        body: jsonContent(selectOwnerSchema, "Login request"),
+        body: jsonContent(selectOtpSchema, "Login request"),
     },
     responses: {
         [HttpStatusCode.OK]: jsonContent(
@@ -79,7 +79,7 @@ export const login = createRoute({
             "Login success"
         ),
         [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(baseOwnerSchema),
+            createErrorSchema(ownerOtpSchema),
             "Validation error",
         ),
         [HttpStatusCode.BAD_REQUEST]: jsonContent(

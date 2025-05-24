@@ -1,72 +1,215 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import { AppRouteHandler } from "@/types";
 import { db } from "@/db";
-import { OutletCreationSchema } from "./outlet.route";
 import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming } from "@/db/schema";
+import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema } from "./outlet.route";
+import { eq } from "drizzle-orm";
 
-export const createOutlet: AppRouteHandler<OutletCreationSchema> = async (c) => {
-    const { details, legalDocument, manager, outlet: outletBody, timing, bartender, outletImages, fssaiImages, offShopLicenseImages, onShopLicenseImages, panCardImages } = c.req.valid('form');
+export const createOutletLegalDocuments: AppRouteHandler<CreateOutletLegalDocumentsSchema> = async (c) => {
+    const { bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiImage, offShopLicenseImage, onShopLicenseImage, panCardImage } = c.req.valid("form");
 
-    const [uploadedDetails] = await db.insert(outletsDetails).values({
-        address: details.address,
-        contactNumber: details.contactNumber,
-        country: details.country,
-        latitude: details.latitude,
-        longitude: details.longitude,
-        name: details.name,
-        pincode: details.pincode,
-        outlet_image_url: [""],
+    //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
+
+    const [outletLegalDocumentData] = await db.insert(outletLegalDocument).values({
+        bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber
     }).returning();
 
-    const [uploadedLegalDocuments] = await db.insert(outletLegalDocument).values({
-        fssaiNumber: legalDocument.fssaiNumber,
-        fssaiUrl: "",
-        offShopLicenseUrl: "",
-        onShopLicenseUrl: "",
-        panCardNumber: legalDocument.panCardNumber,
-        panCardUrl: "",
-        bankAccountNumber: legalDocument.bankAccountNumber,
-        bankAccountType: legalDocument.bankAccountType,
-        bankIfscCode: legalDocument.bankIfscCode,
-        gstNumber: legalDocument.gstNumber,
+    const response = {
+        message: "Outlet legal document created successfully",
+        data: outletLegalDocumentData
+    }
+
+    return c.json(response, HttpStatusCode.CREATED);
+}
+
+export const createOutletDetails: AppRouteHandler<CreateOutletDetailsSchema> = async (c) => {
+    const { address, contactNumber, country, latitude, longitude, name, pincode, outlet_images, bartenderContactNumber, bartenderName, managerContactNumber, managerEmail, managerName } = c.req.valid("form");
+
+    //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
+
+    const [outletDetailsData] = await db.insert(outletsDetails).values({
+        address, contactNumber, country, latitude, longitude, name, pincode,
+        outlet_image_url: [],
     }).returning();
 
-    const [uploadedManager] = await db.insert(outletManager).values({
-        email: manager.email,
-        contactNumber: manager.contactNumber,
-        name: manager.name,
+    const [outletBartenderData] = await db.insert(outletBartender).values({
+        name: bartenderName,
+        contactNumber: bartenderContactNumber,
     }).returning();
 
-    const [uploadedTiming] = await db.insert(outletTiming).values({
-        establishmentType: timing.establishmentType,
-        weekDayOpeningTime: timing.weekDayOpeningTime,
-        weekDayClosingTime: timing.weekDayClosingTime,
-        weekendOpeningTime: timing.weekendOpeningTime,
-        weekendClosingTime: timing.weekendClosingTime,
-        eventSpace: timing.eventSpace,
-        hotelStay: timing.hotelStay,
+    const [outletManagerData] = await db.insert(outletManager).values({
+        name: managerName,
+        contactNumber: managerContactNumber,
+        email: managerEmail,
     }).returning();
 
-    const [uploadedBartender] = await db.insert(outletBartender).values({
-        contactNumber: bartender?.contactNumber,
-        name: bartender?.name,
+
+    const response = {
+        message: "Outlet details created successfully",
+        data: {
+            details: outletDetailsData,
+            bartender: outletBartenderData,
+            manager: outletManagerData ?? null,
+        }
+    }
+
+    return c.json(response, HttpStatusCode.CREATED);
+}
+
+export const createOutletTiming: AppRouteHandler<CreateOutletTimingSchema> = async (c) => {
+    const { weekDayClosingTime, weekDayOpeningTime, weekendClosingTime, weekendOpeningTime, establishmentType, eventSpace, hotelStay } = c.req.valid("json");
+
+    const [outletTimingData] = await db.insert(outletTiming).values({
+        weekDayOpeningTime, weekDayClosingTime, weekendOpeningTime, weekendClosingTime, establishmentType, eventSpace, hotelStay
     }).returning();
 
-    const [uploadedOutlet] = await db.insert(outlet).values({
-        detailsId: uploadedDetails.id,
-        legalDocumentId: uploadedLegalDocuments.id,
-        managerId: uploadedManager.id,
-        timingId: uploadedTiming.id,
-        bartenderId: uploadedBartender.id,
-        name: outletBody.name,
-        isVerified: false,
-        ownerId: outletBody.ownerId
+    const response = {
+        message: "Outlet timing created successfully",
+        data: outletTimingData
+    }
+
+    return c.json(response, HttpStatusCode.CREATED);
+}
+
+export const createOutlet: AppRouteHandler<CreateOutletSchema> = async (c) => {
+    const { bartenderId, detailsId, legalDocumentId, managerId, ownerId, timingId } = c.req.valid("json");
+
+    // Check if bartender exists
+    if (bartenderId) {
+        const bartenderExists = await db.query.outletBartender.findFirst({
+            where: (bartender, { eq }) => eq(bartender.id, bartenderId)
+        });
+
+        if (!bartenderExists) {
+            return c.json({
+                message: "Bartender not found",
+            }, HttpStatusCode.NOT_FOUND);
+        }
+    }
+
+    // Check if outlet details exists
+    const detailsExists = await db.query.outletsDetails.findFirst({
+        where: (details, { eq }) => eq(details.id, detailsId)
+    });
+    if (!detailsExists) {
+        return c.json({
+            message: "Outlet details not found",
+        }, HttpStatusCode.NOT_FOUND);
+    }
+
+    // Check if legal document exists
+    const legalDocumentExists = await db.query.outletLegalDocument.findFirst({
+        where: (doc, { eq }) => eq(doc.id, legalDocumentId)
+    });
+    if (!legalDocumentExists) {
+        return c.json({
+            message: "Legal document not found",
+        }, HttpStatusCode.NOT_FOUND);
+    }
+
+    // Check if manager exists
+    const managerExists = await db.query.outletManager.findFirst({
+        where: (manager, { eq }) => eq(manager.id, managerId)
+    });
+    if (!managerExists) {
+        return c.json({
+            message: "Manager not found",
+        }, HttpStatusCode.NOT_FOUND);
+    }
+
+    // Check if timing exists
+    const timingExists = await db.query.outletTiming.findFirst({
+        where: (timing, { eq }) => eq(timing.id, timingId)
+    });
+    if (!timingExists) {
+        throw new Error("Timing not found");
+    }
+
+    // Check if owner exists
+    const ownerExists = await db.query.owner.findFirst({
+        where: (owner, { eq }) => eq(owner.id, ownerId)
+    });
+    if (!ownerExists) {
+        return c.json({
+            message: "Owner not found",
+        }, HttpStatusCode.NOT_FOUND);
+    }
+
+
+
+    const [outletData] = await db.insert(outlet).values({
+        bartenderId,
+        detailsId,
+        legalDocumentId,
+        managerId,
+        ownerId,
+        timingId
     }).returning();
 
     const response = {
         message: "Outlet created successfully",
-        data: uploadedOutlet
+        data: outletData
     }
 
-    return c.json(response, HttpStatusCode.CREATED)
+    return c.json(response, HttpStatusCode.CREATED);
 }
+
+export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => {
+    const { id } = c.req.valid("param");
+    const { bartender, details, legalDocument, manager, timing, owner } = c.req.valid("query");
+
+    const outletData = await db.query.outlet.findFirst({
+        where: (outlet, { eq }) => eq(outlet.id, id),
+        columns: {
+            id: true,
+            createdAt: true,
+            updatedAt: true,
+            isVerified: true,
+        },
+        with: {
+            bartender: bartender ? true : undefined,
+            details: details ? true : undefined,
+            legalDocument: legalDocument ? true : undefined,
+            manager: manager ? true : undefined,
+            owner: owner ? true : undefined,
+            timing: timing ? true : undefined,
+        }
+    });
+
+    if (!outletData) {
+        return c.json({ message: "Outlet not found" }, HttpStatusCode.NOT_FOUND);
+    }
+
+
+    const response = {
+        message: "Outlet fetched successfully",
+        data: outletData
+    };
+
+    return c.json(response, HttpStatusCode.OK);
+};
+
+export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
+    const { id } = c.req.valid("param");
+    const { isVerified } = c.req.valid("json");
+
+    // Check if the outlet exists
+    const dbOutlet = await db.query.outlet.findFirst({
+        where: (outlet, { eq }) => eq(outlet.id, id),
+    });
+
+    if (!dbOutlet) {
+        return c.json({ message: "Outlet not found" }, HttpStatusCode.NOT_FOUND);
+    }
+
+    const [updatedOutlet] = await db
+        .update(outlet)
+        .set({ isVerified })
+        .where(eq(outlet.id, id))
+        .returning()
+
+    return c.json({
+        message: `Outlet ${isVerified ? "verified" : "unverified"} successfully`,
+        data: updatedOutlet,
+    }, HttpStatusCode.OK);
+};
