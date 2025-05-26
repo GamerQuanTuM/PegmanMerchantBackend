@@ -73,6 +73,10 @@ export const createOutletDetailsSchema = createRoute({
             createErrorSchema(fullOutletDetailsInsertSchema),
             "Validation error"
         ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
     }
 })
 

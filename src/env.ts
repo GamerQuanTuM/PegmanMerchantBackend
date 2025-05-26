@@ -18,6 +18,8 @@ const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.coerce.number(),
   REDIS_PASSWORD: z.string(),
+  UPLOADTHING_TOKEN: z.string(),
+  UPLOADTHING_SECRET: z.string(),
 })
 
 export type env = z.infer<typeof envSchema>;

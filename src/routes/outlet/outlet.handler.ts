@@ -4,14 +4,40 @@ import { db } from "@/db";
 import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming } from "@/db/schema";
 import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema } from "./outlet.route";
 import { eq } from "drizzle-orm";
+import { uploadFiles } from "@/lib/storage"
 
 export const createOutletLegalDocuments: AppRouteHandler<CreateOutletLegalDocumentsSchema> = async (c) => {
     const { bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiImage, offShopLicenseImage, onShopLicenseImage, panCardImage } = c.req.valid("form");
 
     //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
 
+    let fssaiUrl = "";
+    let offShopLicenseUrl = "";
+    let onShopLicenseUrl = "";
+    let panCardUrl = "";
+
+    if (fssaiImage) {
+        const [url] = await uploadFiles([fssaiImage]);
+        fssaiUrl = url;
+    }
+
+    if (offShopLicenseImage) {
+        const [url] = await uploadFiles([offShopLicenseImage]);
+        offShopLicenseUrl = url;
+    }
+
+    if (onShopLicenseImage) {
+        const [url] = await uploadFiles([onShopLicenseImage]);
+        onShopLicenseUrl = url;
+    }
+
+    if (panCardImage) {
+        const [url] = await uploadFiles([panCardImage]);
+        panCardUrl = url;
+    }
+
     const [outletLegalDocumentData] = await db.insert(outletLegalDocument).values({
-        bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber
+        bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiUrl, offShopLicenseUrl, onShopLicenseUrl, panCardUrl
     }).returning();
 
     const response = {
@@ -25,11 +51,22 @@ export const createOutletLegalDocuments: AppRouteHandler<CreateOutletLegalDocume
 export const createOutletDetails: AppRouteHandler<CreateOutletDetailsSchema> = async (c) => {
     const { address, contactNumber, country, latitude, longitude, name, pincode, outlet_images, bartenderContactNumber, bartenderName, managerContactNumber, managerEmail, managerName } = c.req.valid("form");
 
+    if (outlet_images?.length > 2) {
+        return c.json({
+            message: "Outlet images cannot be more than 2",
+        }, HttpStatusCode.BAD_REQUEST);
+    }
+
+    let image_urls: string[] = [];
+
     //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
+    if (outlet_images) {
+        image_urls = await uploadFiles(outlet_images);
+    }
 
     const [outletDetailsData] = await db.insert(outletsDetails).values({
         address, contactNumber, country, latitude, longitude, name, pincode,
-        outlet_image_url: [],
+        outlet_image_url: image_urls,
     }).returning();
 
     const [outletBartenderData] = await db.insert(outletBartender).values({
