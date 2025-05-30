@@ -27,3 +27,19 @@ export const accountTypeEnum = pgEnum('account_type', [
     "SAVINGS",
     "CURRENT"
 ])
+
+export const dayOfWeekEnum = pgEnum('day_of_week', [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY"
+])
+
+export const collectionTypeEnum = pgEnum('collection_type', [
+    "GOLD",
+    "SILVER",
+    "CRYSTAL",
+])

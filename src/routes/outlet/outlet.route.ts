@@ -5,7 +5,7 @@ import { createErrorSchema, createMessageObjectSchema, IdUUIDParamsSchema } from
 import { jsonContent, jsonContentOneOf } from "stoker/openapi/helpers";
 import protect from "@/middlewares/protect";
 import { insertOutletLegalDocumentSchema, outletLegalDocumentsResponseSchema } from "@/db/schema/outlet-legal-document.schema";
-import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, updateVerifyOutletSchema } from "@/db/schema";
+import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, insertOutletTimingSchemaWithSlot, insertOutletTimingSlotSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, outletTimingSlotResponseSchema, updateOutletTimingSlotSchema, updateVerifyOutletSchema } from "@/db/schema";
 
 const OutletQuerySchema = z.object({
     owner: z.coerce.boolean().optional().default(false),
@@ -87,7 +87,7 @@ export const createOutletTimingSchema = createRoute({
     middleware: [protect],
     request: {
         body: jsonContent(
-            insertOutletTimingSchema,
+            insertOutletTimingSchemaWithSlot,
             "Outlet Timing Created"
         )
     },
@@ -185,9 +185,67 @@ export const verifyOutletSchema = createRoute({
     }
 })
 
+export const addOutletTimingSlotSchema = createRoute({
+    tags: ["outlet"],
+    method: "post",
+    path: "/outlet-timing/{id}/slot",
+    middleware: [protect],
+    request: {
+        params: IdUUIDParamsSchema,
+        body: jsonContent(
+            insertOutletTimingSlotSchema,
+            "Outlet Timing Slot Created"
+        )
+    },
+    responses: {
+        [HttpStatusCode.CREATED]: jsonContent(
+            outletTimingSlotResponseSchema,
+            HttpStatusPhrases.CREATED
+        ),
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(insertOutletTimingSlotSchema),
+            "Validation error"
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
+        ),
+    }
+})
+
+export const modifyOutletTimingSlotSchema = createRoute({
+    tags: ["outlet"],
+    method: "patch",
+    path: "/outlet-timing-slot/{id}",
+    middleware: [protect],
+    request: {
+        params: IdUUIDParamsSchema,
+        body: jsonContent(
+            updateOutletTimingSlotSchema,
+            "Outlet Timing Slot Updated"
+        )
+    },
+    responses: {
+        [HttpStatusCode.OK]: jsonContent(
+            outletTimingSlotResponseSchema,
+            HttpStatusPhrases.OK
+        ),
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+           [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(updateOutletTimingSlotSchema)],
+            "Validation error"
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
+        )
+    }
+})
+
 export type CreateOutletLegalDocumentsSchema = typeof createOutletLegalDocuments;
 export type CreateOutletDetailsSchema = typeof createOutletDetailsSchema;
 export type CreateOutletTimingSchema = typeof createOutletTimingSchema;
 export type CreateOutletSchema = typeof createOutletSchema;
 export type GetOutletSchemaById = typeof getOutletSchemaById;
 export type VerifyOutletSchema = typeof verifyOutletSchema;
+export type AddOutletTimingSlotSchema = typeof addOutletTimingSlotSchema;
+export type UpdateOutletTimingSlotSchema = typeof modifyOutletTimingSlotSchema;

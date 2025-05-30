@@ -1,8 +1,8 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import { AppRouteHandler } from "@/types";
 import { db } from "@/db";
-import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming } from "@/db/schema";
-import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema } from "./outlet.route";
+import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming, outletTimingSlot } from "@/db/schema";
+import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema, AddOutletTimingSlotSchema, UpdateOutletTimingSlotSchema } from "./outlet.route";
 import { eq } from "drizzle-orm";
 import { uploadFiles } from "@/lib/storage"
 
@@ -94,19 +94,40 @@ export const createOutletDetails: AppRouteHandler<CreateOutletDetailsSchema> = a
 }
 
 export const createOutletTiming: AppRouteHandler<CreateOutletTimingSchema> = async (c) => {
-    const { weekDayClosingTime, weekDayOpeningTime, weekendClosingTime, weekendOpeningTime, establishmentType, eventSpace, hotelStay } = c.req.valid("json");
+    const { establishmentType, eventSpace, hotelStay, slots } = c.req.valid("json");
 
     const [outletTimingData] = await db.insert(outletTiming).values({
-        weekDayOpeningTime, weekDayClosingTime, weekendOpeningTime, weekendClosingTime, establishmentType, eventSpace, hotelStay
+        establishmentType,
+        eventSpace,
+        hotelStay,
     }).returning();
+
+    await Promise.all(
+        slots.map((slot) =>
+            db.insert(outletTimingSlot).values({
+                day: slot.day,
+                openingTime: slot.openingTime,
+                closingTime: slot.closingTime,
+                outletTimingId: outletTimingData.id,
+            })
+        )
+    );
+
+    const dbSlots = await db.query.outletTimingSlot.findMany({
+        where: (slot, { eq }) => eq(slot.outletTimingId, outletTimingData.id),
+    });
 
     const response = {
         message: "Outlet timing created successfully",
-        data: outletTimingData
-    }
+        data: {
+            ...outletTimingData,
+            slots: dbSlots,
+        },
+    };
 
     return c.json(response, HttpStatusCode.CREATED);
-}
+};
+
 
 export const createOutlet: AppRouteHandler<CreateOutletSchema> = async (c) => {
     const { bartenderId, detailsId, legalDocumentId, managerId, ownerId, timingId } = c.req.valid("json");
@@ -209,7 +230,11 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
             legalDocument: legalDocument ? true : undefined,
             manager: manager ? true : undefined,
             owner: owner ? true : undefined,
-            timing: timing ? true : undefined,
+            timing: timing ? {
+                with: {
+                    slots: true
+                }
+            } : undefined,
         }
     });
 
@@ -217,10 +242,17 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
         return c.json({ message: "Outlet not found" }, HttpStatusCode.NOT_FOUND);
     }
 
+    const normalizedData = {
+        ...outletData,
+        timing: outletData.timing ? {
+            ...outletData.timing,
+            slots: 'slots' in outletData.timing ? outletData.timing.slots : []
+        } : null
+    };
 
     const response = {
         message: "Outlet fetched successfully",
-        data: outletData
+        data: normalizedData
     };
 
     return c.json(response, HttpStatusCode.OK);
@@ -250,3 +282,57 @@ export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
         data: updatedOutlet,
     }, HttpStatusCode.OK);
 };
+
+export const addOutletTiming:AppRouteHandler<AddOutletTimingSlotSchema> = async (c) => {
+    const { id } = c.req.valid("param");
+    const { day, openingTime, closingTime } = c.req.valid("json");
+
+   const outletTimingData = await db.query.outletTiming.findFirst({
+        where: (outletTiming, { eq }) => eq(outletTiming.id, id),
+    });
+
+    if (!outletTimingData) {
+        return c.json({ message: "Outlet timing not found" }, HttpStatusCode.NOT_FOUND);
+    }
+
+    const [outletTimingSlotData] = await db.insert(outletTimingSlot).values({
+        day,
+        openingTime,
+        closingTime,
+        outletTimingId: id,
+    }).returning();
+
+    const response = {
+        message: "Outlet timing slot created successfully",
+        data: outletTimingSlotData
+    }
+
+    return c.json(response, HttpStatusCode.CREATED);
+}
+
+
+export const updateOutletTimingSlot: AppRouteHandler<UpdateOutletTimingSlotSchema> = async (c) => {
+   const { id } = c.req.valid("param");
+    const { day, openingTime, closingTime } = c.req.valid("json");
+
+    const outletTimingSlotData = await db.query.outletTimingSlot.findFirst({
+        where: (outletTimingSlot, { eq }) => eq(outletTimingSlot.id, id),
+    });
+
+    if (!outletTimingSlotData) {
+        return c.json({ message: "Outlet timing slot not found" }, HttpStatusCode.NOT_FOUND);
+    }
+
+    const [updatedOutletTimingSlot] = await db
+       .update(outletTimingSlot)
+       .set({ day, openingTime, closingTime })
+       .where(eq(outletTimingSlot.id, id))
+       .returning()
+
+       const response = {
+        message: "Outlet timing slot updated successfully",
+        data: updatedOutletTimingSlot
+    }
+
+    return c.json(response, HttpStatusCode.OK);
+}

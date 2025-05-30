@@ -9,5 +9,7 @@ const router = createRouter()
     .openapi(routes.createOutletSchema, handler.createOutlet)
     .openapi(routes.getOutletSchemaById, handler.getOutletById)
     .openapi(routes.verifyOutletSchema, handler.verifyOutlet)
+    .openapi(routes.addOutletTimingSlotSchema, handler.addOutletTiming)
+    .openapi(routes.modifyOutletTimingSlotSchema, handler.updateOutletTimingSlot)
 
 export default router;

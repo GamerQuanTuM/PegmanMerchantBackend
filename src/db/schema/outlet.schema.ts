@@ -3,12 +3,13 @@ import { pgTable, uuid, timestamp, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import { owner, selectOwnerSchema } from "./owner.schema";
+import { owner } from "./owner.schema";
 import { outletsDetails, selectOutletsDetailsSchema } from "./outlet-details.schema";
 import { outletLegalDocument, selectOutletLegalDocumentsSchema } from "./outlet-legal-document.schema";
 import { outletManager, selectOutletManagerSchema } from "./outlet-manager.schema";
 import { outletTiming, selectOutletTimingSchema } from "./outlet-timing.schema";
 import { outletBartender, selectOutletBartenderSchema } from "./outlet-bartender.schema";
+import { selectOutletTimingSlotSchema } from "./outlet-timing-slot.schema";
 
 export const outlet = pgTable("outlet", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -77,6 +78,11 @@ export const insertOutletSchema = createInsertSchema(outlet, {
 
 export const selectOutletSchema = createSelectSchema(outlet)
 
+export const selectOutletTimingWithSlotsSchema = selectOutletTimingSchema.extend({
+    slots: z.array(selectOutletTimingSlotSchema).nullable(),
+});
+
+
 export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
     ownerId: true,
     detailsId: true,
@@ -90,7 +96,7 @@ export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
     legalDocument: selectOutletLegalDocumentsSchema.nullable(),
     manager: selectOutletManagerSchema.nullable(),
     bartender: selectOutletBartenderSchema.nullable(),
-    timing: selectOutletTimingSchema.nullable(),
+    timing: selectOutletTimingWithSlotsSchema.nullable(),
 })
 
 export const outletResponseSchemaWithRelations = z.object({

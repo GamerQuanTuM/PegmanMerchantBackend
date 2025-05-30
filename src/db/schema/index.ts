@@ -7,3 +7,4 @@ export * from "./outlet-manager.schema";
 export * from "./outlet-timing.schema";
 export * from "./outlet-bartender.schema";
 export * from "./outlet-manager.schema";
+export * from "./outlet-timing-slot.schema";
