@@ -2,7 +2,6 @@ import { relations } from "drizzle-orm";
 import { pgTable, uuid, timestamp, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-
 import { owner } from "./owner.schema";
 import { outletsDetails, selectOutletsDetailsSchema } from "./outlet-details.schema";
 import { outletLegalDocument, selectOutletLegalDocumentsSchema } from "./outlet-legal-document.schema";
@@ -10,16 +9,22 @@ import { outletManager, selectOutletManagerSchema } from "./outlet-manager.schem
 import { outletTiming, selectOutletTimingSchema } from "./outlet-timing.schema";
 import { outletBartender, selectOutletBartenderSchema } from "./outlet-bartender.schema";
 import { selectOutletTimingSlotSchema } from "./outlet-timing-slot.schema";
+import { collection } from "./collection.schema";
+import { infinityPass } from "./infinity-pass.schema";
 
 export const outlet = pgTable("outlet", {
     id: uuid("id").primaryKey().defaultRandom(),
     ownerId: uuid("owner_id").references(() => owner.id),
-    isVerified: boolean().default(false),
+    is_verified: boolean().default(false),
     detailsId: uuid("details_id").references(() => outletsDetails.id),
     legalDocumentId: uuid("legal_document_id").references(() => outletLegalDocument.id),
     managerId: uuid("manager_id").references(() => outletManager.id),
     timingId: uuid("timing_id").references(() => outletTiming.id),
     bartenderId: uuid("bartender_id").references(() => outletBartender.id),
+    goldCollectionId: uuid("gold_collection_id").references(() => collection.id),
+    silverCollectionId: uuid("silver_collection_id").references(() => collection.id),
+    crystalCollectionId: uuid("crystal_collection_id").references(() => collection.id),
+    infinityPassId: uuid("infinity_pass_id").references(() => infinityPass.id),
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
@@ -39,7 +44,7 @@ export const outletRelations = relations(outlet, ({ one }) => ({
         fields: [outlet.detailsId],
         references: [outletsDetails.id],
     }),
-    legalDocument: one(outletLegalDocument, {
+    legal_document: one(outletLegalDocument, {
         fields: [outlet.legalDocumentId],
         references: [outletLegalDocument.id],
     }),
@@ -58,7 +63,26 @@ export const outletRelations = relations(outlet, ({ one }) => ({
     owner: one(owner, {
         fields: [outlet.ownerId],
         references: [owner.id],
-    })
+    }),
+    gold_collection: one(collection, {
+        fields: [outlet.goldCollectionId],
+        references: [collection.id],
+        relationName: "gold_collection",
+    }),
+    silver_collection: one(collection, {
+        fields: [outlet.silverCollectionId],
+        references: [collection.id],
+        relationName: "silver_collection",
+    }),
+    crystal_collection: one(collection, {
+        fields: [outlet.crystalCollectionId],
+        references: [collection.id],
+        relationName: "crystal_collection",
+    }),
+    infinity_pass: one(infinityPass, {
+        fields: [outlet.infinityPassId],
+        references: [infinityPass.id],
+    }),
 }));
 
 export const insertOutletSchema = createInsertSchema(outlet, {
@@ -73,7 +97,11 @@ export const insertOutletSchema = createInsertSchema(outlet, {
         id: true,
         createdAt: true,
         updatedAt: true,
-        isVerified: true,
+        is_verified: true,
+        goldCollectionId: true,
+        silverCollectionId: true,
+        crystalCollectionId: true,
+        infinityPassId: true,
     })
 
 export const selectOutletSchema = createSelectSchema(outlet)
@@ -90,10 +118,14 @@ export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
     managerId: true,
     timingId: true,
     bartenderId: true,
+    goldCollectionId: true,
+    silverCollectionId: true,
+    crystalCollectionId: true,
+    infinityPassId: true
 }).extend({
     owner: ownerSchema.nullable(),
     details: selectOutletsDetailsSchema.nullable(),
-    legalDocument: selectOutletLegalDocumentsSchema.nullable(),
+    legal_document: selectOutletLegalDocumentsSchema.nullable(),
     manager: selectOutletManagerSchema.nullable(),
     bartender: selectOutletBartenderSchema.nullable(),
     timing: selectOutletTimingWithSlotsSchema.nullable(),
@@ -110,7 +142,7 @@ export const outletResponseSchema = z.object({
 });
 
 export const updateVerifyOutletSchema = selectOutletSchema.pick({
-    isVerified: true,
+    is_verified: true,
 })
 
 

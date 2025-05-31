@@ -10,7 +10,7 @@ export const establishmentTypeEnum = pgEnum('establishment_type', [
     "RESTAURANT"
 ]);
 
-export const passTypeEnum = pgEnum('pass_type', [
+export const tierEnum = pgEnum('pass_type', [
     'GOLD',
     "SILVER",
     'CRYSTAL'
@@ -36,10 +36,4 @@ export const dayOfWeekEnum = pgEnum('day_of_week', [
     "FRIDAY",
     "SATURDAY",
     "SUNDAY"
-])
-
-export const collectionTypeEnum = pgEnum('collection_type', [
-    "GOLD",
-    "SILVER",
-    "CRYSTAL",
 ])

@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, boolean, time } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, time } from "drizzle-orm/pg-core";
 import { dayOfWeekEnum } from "./enums"
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -16,11 +16,11 @@ export const outletTimingSlot = pgTable("outlet_timing_slot", {
 })
 
 export const outletTimingSlotRelation = relations(outletTimingSlot, ({ one }) => ({
-    outletTiming: one(outletTiming, {
-        fields: [outletTimingSlot.id],
-        references: [outletTiming.id]
-    })
-}))
+    outlet_timing: one(outletTiming, {
+      fields: [outletTimingSlot.outletTimingId],
+      references: [outletTiming.id],
+    }),
+  }));
 
 export const insertOutletTimingSlotSchema = createInsertSchema(outletTimingSlot, {
     day: z.enum(dayOfWeekEnum.enumValues),

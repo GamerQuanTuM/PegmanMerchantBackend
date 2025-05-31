@@ -214,7 +214,7 @@ export const createOutlet: AppRouteHandler<CreateOutletSchema> = async (c) => {
 
 export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => {
     const { id } = c.req.valid("param");
-    const { bartender, details, legalDocument, manager, timing, owner } = c.req.valid("query");
+    const { bartender, details, legal_document, manager, timing, owner } = c.req.valid("query");
 
     const outletData = await db.query.outlet.findFirst({
         where: (outlet, { eq }) => eq(outlet.id, id),
@@ -222,12 +222,12 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
             id: true,
             createdAt: true,
             updatedAt: true,
-            isVerified: true,
+            is_verified: true,
         },
         with: {
             bartender: bartender ? true : undefined,
             details: details ? true : undefined,
-            legalDocument: legalDocument ? true : undefined,
+            legal_document: legal_document ? true : undefined,
             manager: manager ? true : undefined,
             owner: owner ? true : undefined,
             timing: timing ? {
@@ -260,7 +260,7 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
 
 export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
     const { id } = c.req.valid("param");
-    const { isVerified } = c.req.valid("json");
+    const { is_verified } = c.req.valid("json");
 
     // Check if the outlet exists
     const dbOutlet = await db.query.outlet.findFirst({
@@ -273,12 +273,12 @@ export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
 
     const [updatedOutlet] = await db
         .update(outlet)
-        .set({ isVerified })
+        .set({ is_verified })
         .where(eq(outlet.id, id))
         .returning()
 
     return c.json({
-        message: `Outlet ${isVerified ? "verified" : "unverified"} successfully`,
+        message: `Outlet ${is_verified ? "verified" : "unverified"} successfully`,
         data: updatedOutlet,
     }, HttpStatusCode.OK);
 };

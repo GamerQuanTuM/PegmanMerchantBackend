@@ -1,94 +1,314 @@
-# Vendor Platform Database Schema
+# Pegman Backend Database Schema
 
-This document describes the database schema and relationships for the Vendor Platform.
+This document provides an overview of the database schema used in the Pegman backend application. It includes details about all tables, their fields, and relationships.
 
-## Database Schema Overview
+## Table of Contents
 
-The schema consists of several main entities:
+- [Enumerations](#enumerations)
+- [Tables](#tables)
+  - [Users](#users)
+  - [Owner](#owner)
+  - [Outlet](#outlet)
+  - [Outlet Details](#outlet-details)
+  - [Outlet Legal Document](#outlet-legal-document)
+  - [Outlet Manager](#outlet-manager)
+  - [Outlet Bartender](#outlet-bartender)
+  - [Outlet Timing](#outlet-timing)
+  - [Outlet Timing Slot](#outlet-timing-slot)
+  - [Collection](#collection)
+  - [Liquor](#liquor)
+  - [Infinity Pass](#infinity-pass)
+  - [Ticket](#ticket)
+  - [Ticket Item](#ticket-item)
+- [Relationships](#relationships)
 
-1. **User**: Represents system users with authentication details
-2. **Owner**: Represents business owners who manage outlets
-3. **Outlet**: Represents physical business locations
-4. **Manager**: Represents staff managing specific outlets
-5. **Bartender**: Represents bar staff at outlets
-6. **Address/Location**: Geographic information for outlets
-7. **ContactInfo**: Contact details for various entities
-8. **LegalDocuments**: Business documentation and verification
-9. **OutletImages**: Media associated with outlets
+## Enumerations
 
-## Key Relationships
+The application uses several PostgreSQL enumerations to enforce data consistency:
 
-### 1. User ↔ Owner
-- One-to-one relationship
-- Each user can be associated with one owner account
-- Owner records reference the user ID
+### `establishment_type`
+- BAR
+- RESTAURANT_CUM_BAR
+- LIQUOR_SHOP
+- PUB
+- LOUNGE
+- RESTAURANT
 
-### 2. Owner ↔ Outlet
-- One-to-many relationship
-- An owner can have multiple outlets (one owner → many outlets)
-- Each outlet references its owner via `owner_id` foreign key
-- The relationship is defined in both directions:
-  - Owner has many Outlets (`ownerRelations`)
-  - Outlet belongs to one Owner (`outletRelations`)
+### `tier`
+- GOLD
+- SILVER
+- CRYSTAL
 
-### 3. Outlet ↔ OutletPrimaryDetails
-- One-to-one relationship
-- Contains core information about the outlet including:
-  - Address
-  - Contact info
-  - Location coordinates
-  - Manager details
-  - Bartender details
+### `role`
+- SUPER_ADMIN
+- ADMIN
+- MANAGER
+- USER
 
-### 4. Outlet ↔ OutletTimings
-- One-to-one relationship
-- Contains operating hours and establishment type
+### `account_type`
+- SAVINGS
+- CURRENT
 
-### 5. Outlet ↔ OutletImages
-- One-to-many relationship
-- An outlet can have multiple images
-- Images are stored with metadata including S3 links
+### `day_of_week`
+- MONDAY
+- TUESDAY
+- WEDNESDAY
+- THURSDAY
+- FRIDAY
+- SATURDAY
+- SUNDAY
 
-### 6. Outlet ↔ LegalDocuments
-- One-to-one relationship
-- Contains all required business documentation
+### `collection_type`
+- GOLD
+- SILVER
+- CRYSTAL
 
-### 7. Manager ↔ ContactInfo
-- One-to-one relationship
-- Managers have their own contact information
+## Tables
 
-## Technical Notes
+### Users
 
-- All tables include `created_at` and `updated_at` timestamps
-- Primary keys are UUIDs unless otherwise specified
-- Foreign key relationships are explicitly defined
-- The schema supports both relational queries and document-style nested data where appropriate
-- The Owner-Outlet relationship is properly modeled as one-to-many with proper foreign key constraints
+Stores user authentication and role information.
 
-## Essential Foreign Key Dependency Order
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| email | VARCHAR(255) | User email (unique) |
+| password | VARCHAR(255) | Hashed password |
+| role | role | User role enum |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
 
-The following describes which entities must exist before others, based on foreign key constraints:
+### Owner
 
-- **Owner** must exist before an **Outlet** can be created (`outlet.owner_id → owner.id`).
-- **OutletPrimaryDetails**, **OutletTimings**, **OutletImages**, and **LegalDocuments** must exist before an **Outlet** can be created, as `outlet` references their IDs.
-- **Address**, **ContactInfo**, **Location**, **Manager**, and **Bartender** must exist before **OutletPrimaryDetails** can be created, as `outlet_primary_details` references their IDs.
-- **ContactInfo** must exist before a **Manager** can be created (`manager.contact_info_id → contact_info.id`).
-- **ImageMetadata** must exist before it can be linked to **OutletImages** (if such a relation exists).
+Stores information about outlet owners.
 
-**Summary Table of Foreign Key Dependencies:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| name | VARCHAR | Owner name |
+| email | VARCHAR | Owner email |
+| isdCode | INTEGER | International dialing code |
+| mobileNumber | VARCHAR(10) | Mobile number (unique) |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
 
-| Child Table              | Foreign Key Field           | Parent Table           |
-|-------------------------|----------------------------|------------------------|
-| outlet                  | owner_id                   | owner                  |
-| outlet                  | outlet_primary_details_id   | outlet_primary_details |
-| outlet                  | outlet_timings_id           | outlet_timings         |
-| outlet                  | outlet_images_id            | outlet_images          |
-| outlet                  | legal_documents_id          | legal_documents        |
-| outlet_primary_details  | address_id                  | address                |
-| outlet_primary_details  | contact_info_id             | contact_info           |
-| outlet_primary_details  | location_id                 | location               |
-| outlet_primary_details  | manager_id                  | manager                |
-| outlet_primary_details  | bartender_id                | bartender              |
-| manager                 | contact_info_id             | contact_info           |
+### Outlet
 
-**Note:** Attempting to create a child record before its parent will result in a foreign key constraint error. Always create parent entities first, then their dependents.
+Central table that connects all outlet-related information.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| ownerId | UUID | Reference to owner |
+| is_verified | BOOLEAN | Verification status |
+| detailsId | UUID | Reference to outlet details |
+| legalDocumentId | UUID | Reference to legal documents |
+| managerId | UUID | Reference to outlet manager |
+| timingId | UUID | Reference to outlet timing |
+| bartenderId | UUID | Reference to outlet bartender |
+| goldCollectionId | UUID | Reference to gold collection |
+| silverCollectionId | UUID | Reference to silver collection |
+| crystalCollectionId | UUID | Reference to crystal collection |
+| infinityPassId | UUID | Reference to infinity pass |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Details
+
+Stores basic information about an outlet.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| name | VARCHAR(255) | Outlet name |
+| address | TEXT | Full address |
+| contactNumber | VARCHAR(10) | Contact number |
+| latitude | DOUBLE PRECISION | Geographic latitude |
+| longitude | DOUBLE PRECISION | Geographic longitude |
+| country | VARCHAR(100) | Country |
+| pincode | VARCHAR(6) | Postal code |
+| outlet_image_url | TEXT[] | Array of image URLs |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Legal Document
+
+Stores legal and financial information about an outlet.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| fssaiNumber | VARCHAR(14) | Food safety license number |
+| fssaiUrl | TEXT | FSSAI document URL |
+| onShopLicenseUrl | TEXT | On-shop license document URL |
+| offShopLicenseUrl | TEXT | Off-shop license document URL |
+| panCardNumber | VARCHAR(10) | PAN card number |
+| panCardUrl | TEXT | PAN card document URL |
+| gstNumber | VARCHAR(15) | GST registration number |
+| bankAccountNumber | VARCHAR(30) | Bank account number |
+| bankAccountType | account_type | Type of bank account |
+| bankIfscCode | VARCHAR(11) | Bank IFSC code |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Manager
+
+Stores information about outlet managers.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| name | VARCHAR(255) | Manager name |
+| contactNumber | VARCHAR(10) | Contact number |
+| email | VARCHAR(320) | Email address |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Bartender
+
+Stores information about outlet bartenders.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| name | VARCHAR(255) | Bartender name |
+| contactNumber | VARCHAR(10) | Contact number |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Timing
+
+Stores general timing information about an outlet.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| establishmentType | establishment_type | Type of establishment |
+| hotelStay | BOOLEAN | Whether hotel stay is available |
+| eventSpace | BOOLEAN | Whether event space is available |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Outlet Timing Slot
+
+Stores specific opening and closing times for each day of the week.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| outletTimingId | UUID | Reference to outlet timing |
+| day | day_of_week | Day of the week |
+| openingTime | TIME | Opening time |
+| closingTime | TIME | Closing time |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Collection
+
+Stores information about collections (Gold, Silver, Crystal).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| type | tier | Collection tier |
+| pegsPerDay | INTEGER | Number of pegs allowed per day |
+| labelOne | VARCHAR(255) | First label |
+| labelTwo | VARCHAR(255) | Second label |
+| startDate | DATE | Start date of validity |
+| endDate | DATE | End date of validity |
+| bookingPrice | INTEGER | Booking price |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Liquor
+
+Stores information about liquor options in collections.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| collectionId | UUID | Reference to collection |
+| category | VARCHAR(256) | Liquor category |
+| startingPrice | INTEGER | Starting price |
+| brandNames | VARCHAR(256)[] | Array of brand names |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Infinity Pass
+
+Stores information about infinity passes.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| startTime | TIME | Start time |
+| endTime | TIME | End time |
+| specialOffer | VARCHAR(255) | Special offer description |
+| cuisine | VARCHAR(255) | Cuisine type |
+| liquorType | VARCHAR(255) | Liquor type |
+| days | day_of_week[] | Array of days |
+| price | INTEGER | Price |
+| commission | INTEGER | Commission amount |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Ticket
+
+Stores information about user tickets for collections.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Reference to user |
+| collectionId | UUID | Reference to collection |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+### Ticket Item
+
+Stores details about items in a ticket.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| ticketId | UUID | Reference to ticket |
+| category | VARCHAR(100) | Item category |
+| brandNames | VARCHAR(255) | Brand names |
+| pegs | INTEGER | Number of pegs |
+| createdAt | TIMESTAMP | Creation timestamp |
+| updatedAt | TIMESTAMP | Last update timestamp |
+
+## Relationships
+
+### User Relationships
+- A user can have many tickets
+
+### Owner Relationships
+- An owner can have many outlets
+
+### Outlet Relationships
+- An outlet belongs to one owner
+- An outlet has one details record
+- An outlet has one legal document record
+- An outlet has one manager
+- An outlet has one timing record
+- An outlet has one bartender (optional)
+- An outlet can have one gold collection
+- An outlet can have one silver collection
+- An outlet can have one crystal collection
+- An outlet can have one infinity pass
+
+### Outlet Timing Relationships
+- An outlet timing can have many timing slots
+
+### Collection Relationships
+- A collection can have many liquors
+- A collection can have many tickets
+
+### Ticket Relationships
+- A ticket belongs to one user
+- A ticket belongs to one collection
+- A ticket can have many ticket items
+
+### Liquor Relationships
+- A liquor belongs to one collection
