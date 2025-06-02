@@ -100,7 +100,7 @@ Central table that connects all outlet-related information.
 |-------|------|-------------|
 | id | UUID | Primary key |
 | ownerId | UUID | Reference to owner |
-| is_verified | BOOLEAN | Verification status |
+| isVerified | BOOLEAN | Verification status |
 | detailsId | UUID | Reference to outlet details |
 | legalDocumentId | UUID | Reference to legal documents |
 | managerId | UUID | Reference to outlet manager |
@@ -127,7 +127,7 @@ Stores basic information about an outlet.
 | longitude | DOUBLE PRECISION | Geographic longitude |
 | country | VARCHAR(100) | Country |
 | pincode | VARCHAR(6) | Postal code |
-| outlet_image_url | TEXT[] | Array of image URLs |
+| outletImageUrls | TEXT[] | Array of image URLs |
 | createdAt | TIMESTAMP | Creation timestamp |
 | updatedAt | TIMESTAMP | Last update timestamp |
 

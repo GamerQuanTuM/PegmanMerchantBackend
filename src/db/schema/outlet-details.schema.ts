@@ -15,7 +15,7 @@ export const outletsDetails = pgTable("outlet_details", {
   longitude: doublePrecision("longitude"),
   country: varchar("country", { length: 100 }),
   pincode: varchar("pincode", { length: 6 }),
-  outlet_image_url: text('s3_urls').array(),
+  outletImageUrls: text('s3_urls').array(),
   createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
@@ -40,7 +40,7 @@ export const insertOutletsDetailsSchema = createInsertSchema(outletsDetails, {
   id: true,
   createdAt: true,
   updatedAt: true,
-  outlet_image_url: true,
+  outletImageUrls: true,
 }).extend({
   outlet_images: z.any().optional(),
 });

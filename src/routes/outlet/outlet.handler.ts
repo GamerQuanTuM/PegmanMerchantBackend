@@ -66,7 +66,7 @@ export const createOutletDetails: AppRouteHandler<CreateOutletDetailsSchema> = a
 
     const [outletDetailsData] = await db.insert(outletsDetails).values({
         address, contactNumber, country, latitude, longitude, name, pincode,
-        outlet_image_url: image_urls,
+        outletImageUrls: image_urls,
     }).returning();
 
     const [outletBartenderData] = await db.insert(outletBartender).values({
@@ -268,7 +268,7 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
             id: true,
             createdAt: true,
             updatedAt: true,
-            is_verified: true,
+            isVerified: true,
         },
         with: {
             bartender: bartender ? true : undefined,
@@ -306,7 +306,7 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
 
 export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
     const { id } = c.req.valid("param");
-    const { is_verified } = c.req.valid("json");
+    const { isVerified } = c.req.valid("json");
 
     // Check if the outlet exists
     const dbOutlet = await db.query.outlet.findFirst({
@@ -319,12 +319,12 @@ export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
 
     const [updatedOutlet] = await db
         .update(outlet)
-        .set({ is_verified })
+        .set({ isVerified })
         .where(eq(outlet.id, id))
         .returning()
 
     return c.json({
-        message: `Outlet ${is_verified ? "verified" : "unverified"} successfully`,
+        message: `Outlet ${isVerified ? "verified" : "unverified"} successfully`,
         data: updatedOutlet,
     }, HttpStatusCode.OK);
 };

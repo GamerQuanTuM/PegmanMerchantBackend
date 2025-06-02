@@ -16,7 +16,7 @@ const selectOutletSchemaWithInfinityPass = z.object({
         timingId: true,
         bartenderId: true,
         infinityPassId: true,
-        is_verified: true,
+        isVerified: true,
         goldCollectionId: true,
         silverCollectionId: true,
         crystalCollectionId: true,

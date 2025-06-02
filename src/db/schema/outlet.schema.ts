@@ -15,7 +15,7 @@ import { infinityPass } from "./infinity-pass.schema";
 export const outlet = pgTable("outlet", {
     id: uuid("id").primaryKey().defaultRandom(),
     ownerId: uuid("owner_id").references(() => owner.id),
-    is_verified: boolean().default(false),
+    isVerified: boolean("is_verified").default(false),
     detailsId: uuid("details_id").references(() => outletsDetails.id),
     legalDocumentId: uuid("legal_document_id").references(() => outletLegalDocument.id),
     managerId: uuid("manager_id").references(() => outletManager.id),
@@ -96,7 +96,7 @@ export const insertOutletSchema = createInsertSchema(outlet, {
         id: true,
         createdAt: true,
         updatedAt: true,
-        is_verified: true,
+        isVerified: true,
         goldCollectionId: true,
         silverCollectionId: true,
         crystalCollectionId: true,
@@ -145,7 +145,7 @@ export const outletResponseSchema = z.object({
 });
 
 export const updateVerifyOutletSchema = selectOutletSchema.pick({
-    is_verified: true,
+    isVerified: true,
 })
 
 
