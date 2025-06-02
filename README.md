@@ -87,7 +87,6 @@ Stores information about outlet owners.
 | id | UUID | Primary key |
 | name | VARCHAR | Owner name |
 | email | VARCHAR | Owner email |
-| isdCode | INTEGER | International dialing code |
 | mobileNumber | VARCHAR(10) | Mobile number (unique) |
 | createdAt | TIMESTAMP | Creation timestamp |
 | updatedAt | TIMESTAMP | Last update timestamp |
