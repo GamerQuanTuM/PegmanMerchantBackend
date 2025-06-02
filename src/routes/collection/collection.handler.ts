@@ -237,9 +237,24 @@ export const getCollectionByOutletId: AppRouteHandler<GetCollectionByOutletIdSch
         })
     }
 
+    
     if (!dbOutlet) return c.json({
         message: "Outlet not found",
     }, HttpStatusCode.NOT_FOUND)
+
+
+    if (tier === "GOLD" && dbOutlet?.goldCollectionId === null) return c.json({
+        message: "Gold collection not found",
+    }, HttpStatusCode.NOT_FOUND)
+
+    if (tier === "SILVER" && dbOutlet?.silverCollectionId === null) return c.json({
+        message: "Silver collection not found",
+    }, HttpStatusCode.NOT_FOUND)
+
+    if (tier === "CRYSTAL" && dbOutlet?.crystalCollectionId === null) return c.json({
+        message: "Crystal collection not found",
+    }, HttpStatusCode.NOT_FOUND)
+
 
     const response = {
         message: "Collection fetched successfully",

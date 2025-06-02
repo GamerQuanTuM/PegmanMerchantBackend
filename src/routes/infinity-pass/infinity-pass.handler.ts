@@ -73,7 +73,7 @@ export const getInfinityPassById: AppRouteHandler<GetInfinityPassByIdSchema> = a
             id: true,
             createdAt: true,
             updatedAt: true,
-
+            infinityPassId: true,
         },
         with: {
             infinityPass: true,
@@ -83,6 +83,12 @@ export const getInfinityPassById: AppRouteHandler<GetInfinityPassByIdSchema> = a
     if (!outlet) {
         return c.json({
             message: "Outlet not found"
+        }, HttpStatusCode.NOT_FOUND)
+    }
+
+    if (!outlet.infinityPass) {
+        return c.json({
+            message: "Outlet does not have an infinity pass"
         }, HttpStatusCode.NOT_FOUND)
     }
 
