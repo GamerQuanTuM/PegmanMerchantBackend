@@ -44,6 +44,9 @@ importers:
       ioredis:
         specifier: ^5.6.1
         version: 5.6.1
+      node-cron:
+        specifier: ^4.1.0
+        version: 4.1.0
       pg:
         specifier: ^8.15.6
         version: 8.15.6
@@ -684,6 +687,10 @@ packages:
     resolution: {integrity: sha512-lytcDEdxKjGJPTLEfW4mYMigRezMlyJY8W4wxJK8zE533Jlb8L8dRuObJFWg2P+AuOIxoCgKF+2Oq4d4Zd0OUA==}
     engines: {node: ^18 || ^20 || >= 21}
 
+  node-cron@4.1.0:
+    resolution: {integrity: sha512-OS+3ORu+h03/haS6Di8Qr7CrVs4YaKZZOynZwQpyPZDnR3tqRbwJmuP2gVR16JfhLgyNlloAV1VTrrWlRogCFA==}
+    engines: {node: '>=6.0.0'}
+
   node-gyp-build-optional-packages@5.2.2:
     resolution: {integrity: sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw==}
     hasBin: true
@@ -1296,6 +1303,8 @@ snapshots:
   nanoid@5.1.5: {}
 
   node-addon-api@8.3.1: {}
+
+  node-cron@4.1.0: {}
 
   node-gyp-build-optional-packages@5.2.2:
     dependencies:
