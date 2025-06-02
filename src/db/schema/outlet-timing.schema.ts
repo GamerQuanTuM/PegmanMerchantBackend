@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { insertOutletTimingSlotSchema, outletTimingSlot, selectOutletTimingSlotSchema } from "./outlet-timing-slot.schema";
+import { outlet } from "./outlet.schema";
 
 export const outletTiming = pgTable("outlet_timing", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -14,8 +15,12 @@ export const outletTiming = pgTable("outlet_timing", {
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
 
-export const outletTimingRelation = relations(outletTiming, ({ many }) => ({
+export const outletTimingRelation = relations(outletTiming, ({ many, one }) => ({
   slots: many(outletTimingSlot),
+  outlet: one(outlet, {
+    fields: [outletTiming.id],
+    references: [outlet.timingId],
+  }),
 }));
 
 export const insertOutletTimingSchema = createInsertSchema(outletTiming, {

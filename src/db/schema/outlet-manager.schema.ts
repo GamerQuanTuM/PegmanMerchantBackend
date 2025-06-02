@@ -1,6 +1,8 @@
 import { pgTable, varchar, uuid, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
+import { outlet } from "./outlet.schema";
 
 export const outletManager = pgTable("outlet_manager", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -10,6 +12,13 @@ export const outletManager = pgTable("outlet_manager", {
   createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
+
+export const outletManagerRelations = relations(outletManager, ({ one }) => ({
+  outlet: one(outlet, {
+    fields: [outletManager.id],
+    references: [outlet.managerId],
+  }),
+}))
 
 export const insertOutletManagerSchema = createInsertSchema(outletManager).omit({
   id: true,

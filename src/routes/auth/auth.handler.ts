@@ -31,7 +31,7 @@ export const generateOtp: AppRouteHandler<GenerateOtpRoute> = async (c) => {
 
 export const signup: AppRouteHandler<SignupRoute> = async (c) => {
     const user = c.req.valid('json')
-    const { isdCode, mobileNumber, otp: sentOtp } = user;
+    const { mobileNumber, otp: sentOtp } = user;
 
     const key = `register:${mobileNumber}`
     const otp = await redisGet(key)
@@ -51,7 +51,7 @@ export const signup: AppRouteHandler<SignupRoute> = async (c) => {
 
 
     // Insert the user into the database
-    const [inserted] = await db.insert(owner).values({ mobileNumber, isdCode }).returning()
+    const [inserted] = await db.insert(owner).values({ mobileNumber }).returning()
 
     const response = {
         data: inserted,
@@ -64,7 +64,7 @@ export const signup: AppRouteHandler<SignupRoute> = async (c) => {
 
 export const login: AppRouteHandler<LoginRoute> = async (c) => {
     const user = c.req.valid('json')
-    const { isdCode, mobileNumber, otp: sentOtp } = user;
+    const { mobileNumber, otp: sentOtp } = user;
 
     const key = `login:${mobileNumber}`
     const otp = await redisGet(key)

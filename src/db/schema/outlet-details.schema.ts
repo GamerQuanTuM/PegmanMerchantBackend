@@ -3,6 +3,8 @@ import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { insertOutletBartenderSchema, selectOutletBartenderSchema } from "./outlet-bartender.schema";
 import { insertOutletManagerSchema, selectOutletManagerSchema } from "./outlet-manager.schema";
+import { relations } from "drizzle-orm";
+import { outlet } from "./outlet.schema";
 
 export const outletsDetails = pgTable("outlet_details", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -42,6 +44,13 @@ export const insertOutletsDetailsSchema = createInsertSchema(outletsDetails, {
 }).extend({
   outlet_images: z.any().optional(),
 });
+
+export const outletsDetailsRelations = relations(outletsDetails, ({ one }) => ({
+  outlet: one(outlet, {
+    fields: [outletsDetails.id],
+    references: [outlet.detailsId],
+  }),
+}))
 
 export const selectOutletsDetailsSchema = createSelectSchema(outletsDetails);
 

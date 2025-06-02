@@ -94,38 +94,84 @@ export const createOutletDetails: AppRouteHandler<CreateOutletDetailsSchema> = a
 }
 
 export const createOutletTiming: AppRouteHandler<CreateOutletTimingSchema> = async (c) => {
+
     const { establishmentType, eventSpace, hotelStay, slots } = c.req.valid("json");
 
-    const [outletTimingData] = await db.insert(outletTiming).values({
-        establishmentType,
-        eventSpace,
-        hotelStay,
-    }).returning();
 
-    await Promise.all(
-        slots.map((slot) =>
-            db.insert(outletTimingSlot).values({
+    if (!slots || slots.length === 0) {
+        return c.json(
+            {
+                message: "At least one time slot is required"
+            },
+            HttpStatusCode.BAD_REQUEST
+        );
+    }
+
+    for (const slot of slots) {
+        if (!slot.day || !slot.openingTime || !slot.closingTime) {
+            return c.json(
+                {
+                    message: "Each slot must have day, openingTime, and closingTime"
+                },
+                HttpStatusCode.BAD_REQUEST
+            );
+        }
+
+        // Validate time logic (opening time should be before closing time)
+        if (slot.openingTime >= slot.closingTime) {
+            return c.json(
+                {
+                    message: `Opening time must be before closing time for ${slot.day}`
+                },
+                HttpStatusCode.BAD_REQUEST
+            );
+        }
+    }
+
+    // Check for duplicate days
+    const days = slots.map(slot => slot.day);
+    const uniqueDays = new Set(days);
+    if (days.length !== uniqueDays.size) {
+        return c.json(
+            {
+                message: "Each day can only have one time slot"
+            },
+            HttpStatusCode.BAD_REQUEST
+        );
+    }
+
+    // Execute in transaction for data consistency
+    const result = await db.transaction(async (tx) => {
+        // Insert outlet timing
+        const [outletTimingData] = await tx.insert(outletTiming).values({
+            establishmentType,
+            eventSpace,
+            hotelStay,
+        }).returning();
+
+        // Batch insert slots for better performance
+        const insertedSlots = await tx.insert(outletTimingSlot).values(
+            slots.map((slot) => ({
                 day: slot.day,
                 openingTime: slot.openingTime,
                 closingTime: slot.closingTime,
                 outletTimingId: outletTimingData.id,
-            })
-        )
-    );
+            }))
+        ).returning();
 
-    const dbSlots = await db.query.outletTimingSlot.findMany({
-        where: (slot, { eq }) => eq(slot.outletTimingId, outletTimingData.id),
+        return { outletTimingData, insertedSlots };
     });
 
     const response = {
         message: "Outlet timing created successfully",
         data: {
-            ...outletTimingData,
-            slots: dbSlots,
+            ...result.outletTimingData,
+            slots: result.insertedSlots,
         },
     };
 
     return c.json(response, HttpStatusCode.CREATED);
+
 };
 
 
@@ -293,6 +339,15 @@ export const addOutletTiming:AppRouteHandler<AddOutletTimingSlotSchema> = async 
 
     if (!outletTimingData) {
         return c.json({ message: "Outlet timing not found" }, HttpStatusCode.NOT_FOUND);
+    }
+
+    if (openingTime >= closingTime) {
+        return c.json(
+            {
+                message: "Opening time must be before closing time"
+            },
+            HttpStatusCode.BAD_REQUEST
+        );
     }
 
     const [outletTimingSlotData] = await db.insert(outletTimingSlot).values({

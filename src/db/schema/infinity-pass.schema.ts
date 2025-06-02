@@ -24,17 +24,26 @@ export const insertInfinityPassSchema = createInsertSchema(infinityPass).omit({
     createdAt: true,
     updatedAt: true,
 }).extend({
-    startTime: z.string().min(1, "Start time is required"),
-    endTime: z.string().min(1, "End time is required"),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
+    endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
     specialOffer: z.string().min(1, "Special offer is required").max(255).optional(),
     cuisine: z.string().min(1, "Cuisine is required").max(255).optional(),
     liquorType: z.string().min(1, "Liquor type is required").max(255).optional(),
-    days: z.array(z.string()).min(1, "Days is required"),
-    price: z.string().min(1, "Price is required"),
-    commission: z.string().min(1, "Commission is required"),
+    days: z.array(z.enum(dayOfWeekEnum.enumValues)),
+    price: z.number().min(1, "Price is required"),
+    commission: z.number().min(1, "Commission is required"),
 }).refine((data) => {
-    return data.endTime > data.startTime;
+    const startTime = data.startTime.split(':').map(Number);
+    const endTime = data.endTime.split(':').map(Number);
+    const startMinutes = startTime[0] * 60 + startTime[1];
+    const endMinutes = endTime[0] * 60 + endTime[1];
+    return endMinutes > startMinutes;
 }, {
     message: "End time must be after start time",
     path: ["endTime"],
+})
+
+export const infinityPassResponseSchema = z.object({
+    message: z.string(),
+    data: selectInfinityPassSchema
 })

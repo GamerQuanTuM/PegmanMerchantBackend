@@ -9,7 +9,6 @@ export const owner = pgTable("owner", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: varchar("name"),
     email: varchar("email"),
-    isdCode: integer("isd_code"),
     mobileNumber: varchar("mobile_number", { length: 10 }).notNull().unique(),
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
@@ -25,7 +24,6 @@ export const selectOwnerSchema = createSelectSchema(owner)
 
 export const ownerOtpSchema = selectOwnerSchema.pick({
     mobileNumber: true,
-    isdCode: true,
 });
 
 export const selectOtpSchema = ownerOtpSchema.extend({

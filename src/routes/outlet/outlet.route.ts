@@ -101,6 +101,10 @@ export const createOutletTimingSchema = createRoute({
             createErrorSchema(insertOutletTimingSchema),
             "Validation error"
         ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
     }
 })
 
@@ -210,6 +214,10 @@ export const addOutletTimingSlotSchema = createRoute({
             createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
             HttpStatusPhrases.NOT_FOUND
         ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
     }
 })
 
@@ -231,13 +239,13 @@ export const modifyOutletTimingSlotSchema = createRoute({
             HttpStatusPhrases.OK
         ),
         [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-           [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(updateOutletTimingSlotSchema)],
+            [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(updateOutletTimingSlotSchema)],
             "Validation error"
         ),
         [HttpStatusCode.NOT_FOUND]: jsonContent(
             createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
             HttpStatusPhrases.NOT_FOUND
-        )
+        ),
     }
 })
 

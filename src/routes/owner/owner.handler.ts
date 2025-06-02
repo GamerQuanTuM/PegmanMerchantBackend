@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { owner } from "@/db/schema";
 
 export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
-    const { email, isdCode, mobileNumber, name } = c.req.valid('json')
+    const { email, mobileNumber, name } = c.req.valid('json')
 
     const user = await db.query.owner.findFirst({
         where: (owner, { eq }) => eq(owner.mobileNumber, mobileNumber ?? "")
@@ -19,7 +19,6 @@ export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
     const [inserted] = await db.update(owner)
         .set({
             email,
-            isdCode,
             name,
         })
         .where(eq(owner.id, user.id))

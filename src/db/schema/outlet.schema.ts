@@ -33,7 +33,6 @@ const ownerSchema = z.object({
     id: z.string(),
     name: z.string().nullable(),
     email: z.string().nullable(),
-    isdCode: z.number().nullable(),
     mobileNumber: z.string(),
     createdAt: z.date().nullable(),
     updatedAt: z.date().nullable(),
@@ -64,22 +63,22 @@ export const outletRelations = relations(outlet, ({ one }) => ({
         fields: [outlet.ownerId],
         references: [owner.id],
     }),
-    gold_collection: one(collection, {
+    goldCollection: one(collection, {
         fields: [outlet.goldCollectionId],
         references: [collection.id],
         relationName: "gold_collection",
     }),
-    silver_collection: one(collection, {
+    silverCollection: one(collection, {
         fields: [outlet.silverCollectionId],
         references: [collection.id],
         relationName: "silver_collection",
     }),
-    crystal_collection: one(collection, {
+    crystalCollection: one(collection, {
         fields: [outlet.crystalCollectionId],
         references: [collection.id],
         relationName: "crystal_collection",
     }),
-    infinity_pass: one(infinityPass, {
+    infinityPass: one(infinityPass, {
         fields: [outlet.infinityPassId],
         references: [infinityPass.id],
     }),
@@ -111,6 +110,8 @@ export const selectOutletTimingWithSlotsSchema = selectOutletTimingSchema.extend
 });
 
 
+
+
 export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
     ownerId: true,
     detailsId: true,
@@ -130,6 +131,8 @@ export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
     bartender: selectOutletBartenderSchema.nullable(),
     timing: selectOutletTimingWithSlotsSchema.nullable(),
 })
+
+
 
 export const outletResponseSchemaWithRelations = z.object({
     message: z.string(),

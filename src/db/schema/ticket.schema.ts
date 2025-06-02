@@ -1,5 +1,5 @@
 
-import { pgTable, uuid, timestamp, varchar, integer } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, varchar, integer, boolean, date } from "drizzle-orm/pg-core";
 import { users } from "./user.schema";
 import { collection } from "./collection.schema";
 import { relations } from "drizzle-orm";
@@ -8,6 +8,8 @@ export const ticket = pgTable("ticket", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("user_id").references(() => users.id).notNull(),
     collectionId: uuid("collection_id").references(() => collection.id).notNull(),
+    isExpired: boolean("is_expired").notNull().default(false),
+    bookingDate: date("booking_date").notNull(),
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });

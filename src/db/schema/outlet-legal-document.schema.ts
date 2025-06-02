@@ -2,6 +2,8 @@ import { pgTable, varchar, uuid, timestamp, text } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { accountTypeEnum } from "./enums";
+import { outlet } from "./outlet.schema";
+import { relations } from "drizzle-orm";
 
 export const outletLegalDocument = pgTable("outlet_legal_document", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -18,6 +20,13 @@ export const outletLegalDocument = pgTable("outlet_legal_document", {
   createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
+
+export const outletLegalDocumentRelations = relations(outletLegalDocument, ({ one }) => ({
+  outlet: one(outlet, {
+    fields: [outletLegalDocument.id],
+    references: [outlet.legalDocumentId],
+  }),
+}));
 
 export const insertOutletLegalDocumentSchema = createInsertSchema(outletLegalDocument, {
   fssaiNumber: z.string().regex(/^\d{14}$/, "FSSAI number must be exactly 14 digits"),

@@ -15,14 +15,13 @@ export const liquor = pgTable("liquor", {
 })
 
 export const liquorRelations = relations(liquor, ({ one }) => ({
-    collection: one(collection, {
-        fields: [liquor.collectionId],
-        references: [collection.id],
-    })
+  collection: one(collection, {
+    fields: [liquor.collectionId],
+    references: [collection.id],
+  })
 }))
 
 export const insertLiquorSchema = createInsertSchema(liquor, {
-  collectionId: z.string().uuid(),
   category: z.string().min(1, "Liquor name is required").max(256),
   startingPrice: z.number().min(1, "Starting price is required"),
   brandNames: z.string().array().min(1, "Brand names is required"),
@@ -30,6 +29,7 @@ export const insertLiquorSchema = createInsertSchema(liquor, {
   id: true,
   createdAt: true,
   updatedAt: true,
+  collectionId: true,
 })
 
 export const selectLiquorSchema = createSelectSchema(liquor)
