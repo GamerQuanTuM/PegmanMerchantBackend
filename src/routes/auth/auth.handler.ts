@@ -1,6 +1,6 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import { sign } from 'hono/jwt';
-import { AppRouteHandler, AuthenticatedContext } from "@/types";
+import { AppRouteHandler, AuthenticatedContext,BaseRouteHandler } from "@/types";
 import { GenerateOtpRoute, LoginRoute, ProtectedRoute, SignupRoute } from "./auth.route";
 import { db } from "@/db";
 import { owner } from "@/db/schema";
@@ -8,10 +8,9 @@ import env from "@/env";
 import getAuthUser from "@/helpers/auth-user";
 import { redisGet, redisSet } from "@/helpers/redis";
 
-export const generateOtp: AppRouteHandler<GenerateOtpRoute> = async (c) => {
+export const generateOtp: BaseRouteHandler<GenerateOtpRoute> = async (c) => {
     const { mobile_number, login } = c.req.valid('json')
     const otp = Math.floor(100000 + Math.random() * 900000);
-
 
     let key;
     if (login) {
@@ -29,7 +28,7 @@ export const generateOtp: AppRouteHandler<GenerateOtpRoute> = async (c) => {
 
 }
 
-export const signup: AppRouteHandler<SignupRoute> = async (c) => {
+export const signup: BaseRouteHandler<SignupRoute> = async (c) => {
     const user = c.req.valid('json')
     const { mobileNumber, otp: sentOtp } = user;
 
@@ -62,7 +61,7 @@ export const signup: AppRouteHandler<SignupRoute> = async (c) => {
     return c.json(response, HttpStatusCode.CREATED)
 }
 
-export const login: AppRouteHandler<LoginRoute> = async (c) => {
+export const login: BaseRouteHandler<LoginRoute> = async (c) => {
     const user = c.req.valid('json')
     const { mobileNumber, otp: sentOtp } = user;
 
@@ -107,7 +106,7 @@ export const login: AppRouteHandler<LoginRoute> = async (c) => {
 }
 
 export const protectedRoute: AppRouteHandler<ProtectedRoute> = async (c: AuthenticatedContext) => {
-    const user = await getAuthUser(c)
+    const user = await getAuthUser(c);
     console.log(user)
     return c.json("Protected route", HttpStatusCode.OK)
 }

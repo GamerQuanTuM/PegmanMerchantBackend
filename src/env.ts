@@ -20,6 +20,9 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string(),
   UPLOADTHING_TOKEN: z.string(),
   UPLOADTHING_SECRET: z.string(),
+  LOG_LEVEL: z
+  .enum(["info", "debug", "warn", "error", "fatal", "trace", "silent"])
+  .default("info"),
 })
 
 export type env = z.infer<typeof envSchema>;

@@ -1,11 +1,11 @@
 import * as HttpStatusCode from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { db } from "@/db";
-import { AuthenicatedContext } from "@/types";
+import { AuthenticatedContext } from "@/types";
 import { Owner } from "@/db/schema";
 
 
-const getAuthUser = async (c: AuthenicatedContext): Promise<Owner> => {
+const getAuthUser = async (c: AuthenticatedContext): Promise<Owner> => {
     const jwtUser = c.get("user");
     
     if (!jwtUser) {
