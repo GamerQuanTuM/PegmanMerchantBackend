@@ -10,7 +10,7 @@ import protect from "@/middlewares/protect";
 export const updateOwner = createRoute({
     tags: ["owner"],
     path: "/owner/update",
-    middleware: [protect], 
+    middleware: [protect],
     method: "put",
     request: {
         body: jsonContent(updateOwnerSchema, "Update owner request")
@@ -42,7 +42,10 @@ export const getOwnerById = createRoute({
     middleware: [protect],
     method: "get",
     request: {
-        params: IdUUIDParamsSchema
+        params: IdUUIDParamsSchema,
+        query: z.object({
+            outlets: z.coerce.boolean().optional().default(false)
+        })
     },
     responses: {
         [HttpStatusCode.OK]: jsonContent(
@@ -55,7 +58,7 @@ export const getOwnerById = createRoute({
         ),
         [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
-           "Invalid id",
+            "Invalid id",
         ),
 
     }

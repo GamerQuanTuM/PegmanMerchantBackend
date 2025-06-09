@@ -6,10 +6,12 @@ import { eq } from "drizzle-orm";
 import { owner } from "@/db/schema";
 
 export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
-    const { email, mobileNumber, name } = c.req.valid('json')
+
+    const userId = c.var.user.sub
+    const { email, name } = c.req.valid('json')
 
     const user = await db.query.owner.findFirst({
-        where: (owner, { eq }) => eq(owner.mobileNumber, mobileNumber ?? "")
+        where: (owner, { eq }) => eq(owner.id, userId ?? "")
     })
 
     if (!user) {
@@ -34,8 +36,12 @@ export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
 
 export const getOwnerById: AppRouteHandler<GetOwnerByIdRoute> = async (c) => {
     const { id } = c.req.valid("param")
+    const { outlets } = c.req.valid("query")
     const user = await db.query.owner.findFirst({
-        where: (owner, { eq }) => eq(owner.id, id)
+        where: (owner, { eq }) => eq(owner.id, id),
+        with: {
+            outlets: outlets ? true : undefined,
+        },
     })
 
     if (!user) {

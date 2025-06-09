@@ -39,6 +39,7 @@ export const updateOwnerSchema = createSelectSchema(owner).omit({
     id: true,
     createdAt: true,
     updatedAt: true,
+    mobileNumber: true
 }).partial();
 
 export const updateOwnerResponseSchema = z.object({
