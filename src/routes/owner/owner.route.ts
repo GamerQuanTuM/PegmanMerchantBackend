@@ -44,7 +44,16 @@ export const getOwnerById = createRoute({
     request: {
         params: IdUUIDParamsSchema,
         query: z.object({
-            outlets: z.coerce.boolean().optional().default(false)
+            outlets: z.coerce.boolean().optional().default(false),
+            bartender: z.coerce.boolean().optional().default(false),
+            details: z.coerce.boolean().optional().default(false),
+            legalDocument: z.coerce.boolean().optional().default(false),
+            manager: z.coerce.boolean().optional().default(false),
+            timing: z.coerce.boolean().optional().default(false),
+            crystalCollection: z.coerce.boolean().optional().default(false),
+            goldCollection: z.coerce.boolean().optional().default(false),
+            silverCollection: z.coerce.boolean().optional().default(false),
+            infinityPass: z.coerce.boolean().optional().default(false),
         })
     },
     responses: {

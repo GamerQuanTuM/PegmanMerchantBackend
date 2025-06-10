@@ -9,7 +9,7 @@ import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSc
 
 const OutletQuerySchema = z.object({
     owner: z.coerce.boolean().optional().default(false),
-    legal_document: z.coerce.boolean().optional().default(false),
+    legalDocument: z.coerce.boolean().optional().default(false),
     details: z.coerce.boolean().optional().default(false),
     timing: z.coerce.boolean().optional().default(false),
     bartender: z.coerce.boolean().optional().default(false),

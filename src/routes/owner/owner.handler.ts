@@ -36,11 +36,43 @@ export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
 
 export const getOwnerById: AppRouteHandler<GetOwnerByIdRoute> = async (c) => {
     const { id } = c.req.valid("param")
-    const { outlets } = c.req.valid("query")
+    const { outlets, bartender, crystalCollection, details, goldCollection, infinityPass, legalDocument, manager, silverCollection, timing } = c.req.valid("query")
+
+    const nestedWith = {
+        bartender,
+        crystalCollection,
+        goldCollection,
+        silverCollection,
+        details,
+        infinityPass,
+        legalDocument,
+        manager,
+        timing: timing ? {
+            with: {
+                slots: true
+            }
+        } : undefined,
+    };
+
+    const filteredWith = Object.fromEntries(
+        Object.entries(nestedWith).filter(([_, value]) => value)
+    );
+
+    let outletsWith: true | { with: typeof filteredWith } | undefined;
+
+    if (outlets === true) {
+        outletsWith = true;
+    } else if (Object.keys(filteredWith).length > 0) {
+        outletsWith = { with: filteredWith };
+    } else {
+        outletsWith = undefined;
+    }
+
+
     const user = await db.query.owner.findFirst({
         where: (owner, { eq }) => eq(owner.id, id),
         with: {
-            outlets: outlets ? true : undefined,
+            outlets: outletsWith,
         },
     })
 
@@ -56,3 +88,5 @@ export const getOwnerById: AppRouteHandler<GetOwnerByIdRoute> = async (c) => {
     return c.json(response, HttpStatusCode.OK)
 
 }
+
+// const getOwnerOutletDetails

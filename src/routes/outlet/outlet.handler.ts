@@ -260,7 +260,7 @@ export const createOutlet: AppRouteHandler<CreateOutletSchema> = async (c) => {
 
 export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => {
     const { id } = c.req.valid("param");
-    const { bartender, details, legal_document, manager, timing, owner } = c.req.valid("query");
+    const { bartender, details, legalDocument, manager, timing, owner } = c.req.valid("query");
 
     const outletData = await db.query.outlet.findFirst({
         where: (outlet, { eq }) => eq(outlet.id, id),
@@ -273,7 +273,7 @@ export const getOutletById: AppRouteHandler<GetOutletSchemaById> = async (c) => 
         with: {
             bartender: bartender ? true : undefined,
             details: details ? true : undefined,
-            legal_document: legal_document ? true : undefined,
+            legalDocument: legalDocument ? true : undefined,
             manager: manager ? true : undefined,
             owner: owner ? true : undefined,
             timing: timing ? {

@@ -43,7 +43,7 @@ export const outletRelations = relations(outlet, ({ one }) => ({
         fields: [outlet.detailsId],
         references: [outletsDetails.id],
     }),
-    legal_document: one(outletLegalDocument, {
+    legalDocument: one(outletLegalDocument, {
         fields: [outlet.legalDocumentId],
         references: [outletLegalDocument.id],
     }),
@@ -126,7 +126,7 @@ export const selectOutletSchemaWithRelations = selectOutletSchema.omit({
 }).extend({
     owner: ownerSchema.nullable(),
     details: selectOutletsDetailsSchema.nullable(),
-    legal_document: selectOutletLegalDocumentsSchema.nullable(),
+    legalDocument: selectOutletLegalDocumentsSchema.nullable(),
     manager: selectOutletManagerSchema.nullable(),
     bartender: selectOutletBartenderSchema.nullable(),
     timing: selectOutletTimingWithSlotsSchema.nullable(),
