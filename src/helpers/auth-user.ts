@@ -5,7 +5,7 @@ import { AuthenticatedContext } from "@/types";
 import { Owner } from "@/db/schema";
 
 
-const getAuthUser = async (c: AuthenticatedContext): Promise<Owner> => {
+const getAuthUser = async (c:AuthenticatedContext ): Promise<Owner> => {
     const jwtUser = c.get("user");
     
     if (!jwtUser) {
