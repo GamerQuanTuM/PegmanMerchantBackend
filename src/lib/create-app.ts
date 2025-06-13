@@ -4,13 +4,12 @@ import { notFound, onError, serveEmojiFavicon } from "stoker/middlewares";
 import { AppBindings } from "@/types";
 import { logger } from "@/middlewares/pino-logger";
 
-export default function createRouter() {
-    return new OpenAPIHono<AppBindings>({
-        strict: false,
-        defaultHook,
+export default function createRouter<T extends Record<string, unknown> = {}>() {
+    return new OpenAPIHono<T>({
+      strict: false,
+      defaultHook,
     });
-}
-
+  }
 export function createApp() {
     const app = createRouter();
 

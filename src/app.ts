@@ -1,5 +1,5 @@
-import { createApp } from "./lib/create-app.js";
-import configureOpenAPI from "./lib/configure-openapi.js";
+import { createApp } from "./lib/create-app";
+import configureOpenAPI from "./lib/configure-openapi";
 import healthcheck from "./routes/index.route"
 import authRouter from "./routes/auth/auth.index";
 import ownerRouter from "./routes/owner/owner.index";
@@ -26,9 +26,9 @@ const routes = [
 ] as const;
 
 routes.forEach((route) => {
-    app.route("/", route);
+    app.route("/", route as any);
 })
 
-configureOpenAPI(app);
+configureOpenAPI(app as any);
 
 export default app;
