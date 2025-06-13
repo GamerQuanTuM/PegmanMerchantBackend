@@ -2,9 +2,9 @@ import { verify } from "hono/jwt"
 import * as HttpStatusCode from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { MiddlewareHandler } from "hono";
-import env from "@/env"
-import { db } from "@/db";
-import { AppBindings } from "@/types";
+import env from "../env"
+import { db } from "../db";
+import { AppBindings } from "../types";
 
 // Export the middleware as a properly typed MiddlewareHandler
 const protect: MiddlewareHandler<AppBindings> = async (c, next) => {

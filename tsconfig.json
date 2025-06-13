@@ -4,17 +4,17 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "rootDir": "./src",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "types": ["node"],
     "strict": true,
     "outDir": "./dist",
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "include": ["src", "hub.config.ts"]
 }

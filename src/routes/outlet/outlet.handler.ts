@@ -1,10 +1,10 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
-import { AppRouteHandler } from "@/types";
-import { db } from "@/db";
-import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming, outletTimingSlot } from "@/db/schema";
+import { AppRouteHandler } from "../../types";
+import { db } from "../../db";
+import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming, outletTimingSlot } from "../../db/schema";
 import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema, AddOutletTimingSlotSchema, UpdateOutletTimingSlotSchema } from "./outlet.route";
 import { eq } from "drizzle-orm";
-import { uploadFiles } from "@/lib/storage"
+import { uploadFiles } from "../../lib/storage"
 
 export const createOutletLegalDocuments: AppRouteHandler<CreateOutletLegalDocumentsSchema> = async (c) => {
     const { bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiImage, offShopLicenseImage, onShopLicenseImage, panCardImage } = c.req.valid("form");

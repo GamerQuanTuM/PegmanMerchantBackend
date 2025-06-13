@@ -1,10 +1,10 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { createRoute, z } from "@hono/zod-openapi";
-import { ownerResponseSchema, updateOwnerResponseSchema, updateOwnerSchema } from "@/db/schema";
+import { ownerResponseSchema, updateOwnerResponseSchema, updateOwnerSchema } from "../../db/schema";
 import { jsonContent } from "stoker/openapi/helpers";
 import { createErrorSchema, createMessageObjectSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
-import protect from "@/middlewares/protect";
+import protect from "../../middlewares/protect";
 
 // Update owner by unique mobile number
 export const updateOwner = createRoute({

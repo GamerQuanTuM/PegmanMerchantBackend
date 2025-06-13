@@ -1,8 +1,8 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
-import { AppRouteHandler } from "@/types";
+import { AppRouteHandler } from "../../types";
 import { CreateInfinityPassSchema, GetInfinityPassByIdSchema } from "./infinity-pass.route";
-import { db } from "@/db";
-import { infinityPass, outlet } from "@/db/schema";
+import { db } from "../../db";
+import { infinityPass, outlet } from "../../db/schema";
 
 export const createInfinityPass: AppRouteHandler<CreateInfinityPassSchema> = async (c) => {
     const { commission, days, endTime, price, startTime, cuisine, liquorType, specialOffer } = c.req.valid("json");

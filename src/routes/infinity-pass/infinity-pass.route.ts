@@ -1,8 +1,8 @@
 import { createRoute,z } from "@hono/zod-openapi";
 import * as HttpStatusCode from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases"
-import { infinityPassResponseSchema, insertInfinityPassSchema, selectInfinityPassSchema, selectOutletSchema } from "@/db/schema";
-import protect from "@/middlewares/protect";
+import { infinityPassResponseSchema, insertInfinityPassSchema, selectInfinityPassSchema, selectOutletSchema } from "../../db/schema";
+import protect from "../../middlewares/protect";
 import { jsonContent, jsonContentOneOf } from "stoker/openapi/helpers";
 import { createErrorSchema, createMessageObjectSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 

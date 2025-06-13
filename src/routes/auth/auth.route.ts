@@ -3,8 +3,8 @@ import * as HttpStatusCode from "stoker/http-status-codes"
 import { createErrorSchema, createMessageObjectSchema, } from "stoker/openapi/schemas";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { jsonContent } from "stoker/openapi/helpers";
-import { ownerOtpSchema, selectOtpSchema, ownerResponseSchema } from "@/db/schema/owner.schema";
-import protect from "@/middlewares/protect";
+import { ownerOtpSchema, selectOtpSchema, ownerResponseSchema } from "../../db/schema/owner.schema";
+import protect from "../../middlewares/protect";
 
 // Owner generate otp
 export const generateOtp = createRoute({

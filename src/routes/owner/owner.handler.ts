@@ -1,9 +1,9 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
-import { AppRouteHandler } from "@/types";
+import { AppRouteHandler } from "../../types";
 import { UpdateOwnerRoute, GetOwnerByIdRoute } from "./owner.route"
-import { db } from "@/db";
+import { db } from "../../db";
 import { eq } from "drizzle-orm";
-import { owner } from "@/db/schema";
+import { owner } from "../../db/schema";
 
 export const updateOwner: AppRouteHandler<UpdateOwnerRoute> = async (c) => {
 

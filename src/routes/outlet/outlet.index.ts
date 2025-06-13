@@ -1,7 +1,7 @@
-import createRouter from "@/lib/create-app";
+import createRouter from "../../lib/create-app";
 import * as handler from "./outlet.handler";
 import * as routes from "./outlet.route";
-import { AppBindings } from "@/types";
+import { AppBindings } from "../../types";
 
 const router = createRouter<AppBindings>()
     .openapi(routes.createOutletDetailsSchema, handler.createOutletDetails)

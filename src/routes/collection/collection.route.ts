@@ -2,10 +2,10 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { jsonContent } from "stoker/openapi/helpers";
 import * as HttpStatusCode from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { insertCollectionSchema, insertLiquorSchema, selectOutletCollectionSchema, selectLiquorSchema, selectOutletSchema } from "@/db/schema";
-import protect from "@/middlewares/protect";
+import { insertCollectionSchema, insertLiquorSchema, selectOutletCollectionSchema, selectLiquorSchema, selectOutletSchema } from "../../db/schema";
+import protect from "../../middlewares/protect";
 import { createMessageObjectSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
-import { tierEnum } from "@/db/schema/enums";
+import { tierEnum } from "../../db/schema/enums";
 
 const insertCollectionSchemaWithLiquor = z.object({
     ...insertCollectionSchema._def.schema.shape,

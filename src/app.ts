@@ -1,5 +1,5 @@
-import { createApp } from "./lib/create-app";
-import configureOpenAPI from "./lib/configure-openapi";
+import { createApp } from "./lib/create-app.js";
+import configureOpenAPI from "./lib/configure-openapi.js";
 import healthcheck from "./routes/index.route"
 import authRouter from "./routes/auth/auth.index";
 import ownerRouter from "./routes/owner/owner.index";

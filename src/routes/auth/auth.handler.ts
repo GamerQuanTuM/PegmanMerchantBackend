@@ -1,12 +1,12 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import { sign } from 'hono/jwt';
-import { AppRouteHandler, AuthenticatedContext,BaseRouteHandler } from "@/types";
+import { AppRouteHandler, AuthenticatedContext,BaseRouteHandler } from "../../types";
 import { GenerateOtpRoute, LoginRoute, ProtectedRoute, SignupRoute } from "./auth.route";
-import { db } from "@/db";
-import { owner } from "@/db/schema";
-import env from "@/env";
-import getAuthUser from "@/helpers/auth-user";
-import { redisGet, redisSet } from "@/helpers/redis";
+import { db } from "../../db";
+import { owner } from "../../db/schema";
+import env from "../../env";
+import getAuthUser from "../../helpers/auth-user";
+import { redisGet, redisSet } from "../../helpers/redis";
 
 export const generateOtp: BaseRouteHandler<GenerateOtpRoute> = async (c) => {
     const { mobile_number, login } = c.req.valid('json')

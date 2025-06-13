@@ -3,9 +3,9 @@ import * as HttpStatusCode from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { createErrorSchema, createMessageObjectSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { jsonContent, jsonContentOneOf } from "stoker/openapi/helpers";
-import protect from "@/middlewares/protect";
-import { insertOutletLegalDocumentSchema, outletLegalDocumentsResponseSchema } from "@/db/schema/outlet-legal-document.schema";
-import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, insertOutletTimingSchemaWithSlot, insertOutletTimingSlotSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, outletTimingSlotResponseSchema, updateOutletTimingSlotSchema, updateVerifyOutletSchema } from "@/db/schema";
+import protect from "../../middlewares/protect";
+import { insertOutletLegalDocumentSchema, outletLegalDocumentsResponseSchema } from "../../db/schema/outlet-legal-document.schema";
+import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, insertOutletTimingSchemaWithSlot, insertOutletTimingSlotSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, outletTimingSlotResponseSchema, updateOutletTimingSlotSchema, updateVerifyOutletSchema } from "../../db/schema";
 
 const OutletQuerySchema = z.object({
     owner: z.coerce.boolean().optional().default(false),

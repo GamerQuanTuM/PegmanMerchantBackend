@@ -1,9 +1,9 @@
 import * as HttpStatusCode from "stoker/http-status-codes"
 import { eq } from "drizzle-orm";
-import { AppRouteHandler } from "@/types";
+import { AppRouteHandler } from "../../types";
 import { CreateCollectionSchema, UpdateOutletWithCollectionsSchema, GetCollectionByOutletIdSchema } from "./collection.route";
-import { db } from "@/db";
-import { collection, liquor, outlet } from "@/db/schema";
+import { db } from "../../db";
+import { collection, liquor, outlet } from "../../db/schema";
 
 type CollectionIdType = "goldCollectionId" | "silverCollectionId" | "crystalCollectionId";
 

@@ -1,7 +1,7 @@
-import createRouter from "@/lib/create-app";
+import createRouter from "../../lib/create-app";
 import * as handlers from "./collection.handler";
 import * as routes from "./collection.route";
-import { AppBindings } from "@/types";
+import { AppBindings } from "../../types";
 
 
 const router = createRouter<AppBindings>()
