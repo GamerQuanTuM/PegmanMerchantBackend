@@ -14,6 +14,7 @@ export const liquor = pgTable("liquor", {
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 })
 
+
 export const liquorRelations = relations(liquor, ({ one }) => ({
   collection: one(collection, {
     fields: [liquor.collectionId],

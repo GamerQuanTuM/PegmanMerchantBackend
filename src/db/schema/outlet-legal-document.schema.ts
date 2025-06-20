@@ -50,6 +50,8 @@ export const insertOutletLegalDocumentSchema = createInsertSchema(outletLegalDoc
   panCardImage: z.any(),
 })
 
+export const updateOutletLegalDocumentSchema = insertOutletLegalDocumentSchema.partial()
+
 export const selectOutletLegalDocumentsSchema = createSelectSchema(outletLegalDocument);
 
 export const outletLegalDocumentsResponseSchema = z.object({

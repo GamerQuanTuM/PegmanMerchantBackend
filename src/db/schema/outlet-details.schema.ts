@@ -20,6 +20,13 @@ export const outletsDetails = pgTable("outlet_details", {
   updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 });
 
+export const outletDetailsRelations = relations(outletsDetails, ({ one }) => ({
+    outlet: one(outlet, {
+        fields: [outletsDetails.id],
+        references: [outlet.detailsId],
+    }),
+}));
+
 export const insertOutletsDetailsSchema = createInsertSchema(outletsDetails, {
   name: z.string().min(1, "Name is required").max(255),
   address: z.string().min(1, "Address is required"),
@@ -45,6 +52,8 @@ export const insertOutletsDetailsSchema = createInsertSchema(outletsDetails, {
   outlet_images: z.any().optional(),
 });
 
+
+
 export const outletsDetailsRelations = relations(outletsDetails, ({ one }) => ({
   outlet: one(outlet, {
     fields: [outletsDetails.id],
@@ -58,6 +67,12 @@ export const selectOutletsDetailsSchema = createSelectSchema(outletsDetails);
 export const fullOutletDetailsInsertSchema = insertOutletsDetailsSchema
   .merge(insertOutletBartenderSchema)
   .merge(insertOutletManagerSchema.partial());
+
+
+  export const modifyOutletDetailsSchema = insertOutletsDetailsSchema
+  .merge(insertOutletBartenderSchema)
+  .merge(insertOutletManagerSchema)
+  .partial();
 
 // Fix: Create a proper response schema
 export const outletsDetailsResponseSchema = z.object({

@@ -6,9 +6,6 @@
     "rootDir": "./src",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "resolveJsonModule": true,
     "types": ["node"],
     "strict": true,

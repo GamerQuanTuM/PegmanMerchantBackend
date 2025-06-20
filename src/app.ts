@@ -1,3 +1,4 @@
+import { cors } from "hono/cors";
 import { createApp } from "./lib/create-app.js";
 import configureOpenAPI from "./lib/configure-openapi.js";
 import healthcheck from "./routes/index.route"
@@ -14,6 +15,12 @@ const app = createApp();
 // app.use("*", elasticsearchMiddleware({
 //     node: "http://localhost:9200"
 // }))
+
+app.use('*', cors({
+  origin: '*', // or specify your frontend URL like "https://example.com"
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
 
 
 const routes = [

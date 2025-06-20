@@ -4,8 +4,9 @@ import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { createErrorSchema, createMessageObjectSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { jsonContent, jsonContentOneOf } from "stoker/openapi/helpers";
 import protect from "../../middlewares/protect";
-import { insertOutletLegalDocumentSchema, outletLegalDocumentsResponseSchema } from "../../db/schema/outlet-legal-document.schema";
-import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, insertOutletTimingSchemaWithSlot, insertOutletTimingSlotSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, outletTimingSlotResponseSchema, updateOutletTimingSlotSchema, updateVerifyOutletSchema } from "../../db/schema";
+import { insertOutletLegalDocumentSchema, outletLegalDocumentsResponseSchema, updateOutletLegalDocumentSchema } from "../../db/schema/outlet-legal-document.schema";
+import { fullOutletDetailsInsertSchema, insertOutletSchema, insertOutletTimingSchema, insertOutletTimingSchemaWithSlot, insertOutletTimingSlotSchema, outletResponseSchema, outletResponseSchemaWithRelations, outletsDetailsResponseSchema, outletTimingResponseSchema, outletTimingSlotResponseSchema, updateOutletTimingSlotSchema, updateVerifyOutletSchema, modifyOutletDetailsSchema } from "../../db/schema";
+
 
 const OutletQuerySchema = z.object({
     owner: z.coerce.boolean().optional().default(false),
@@ -17,7 +18,7 @@ const OutletQuerySchema = z.object({
 });
 
 
-export const createOutletLegalDocuments = createRoute({
+export const createOutletLegalDocumentsSchema = createRoute({
     tags: ["outlet"],
     method: "post",
     path: "/outlet-legal-documents",
@@ -44,6 +45,48 @@ export const createOutletLegalDocuments = createRoute({
             "Validation error"
         ),
 
+    },
+})
+
+export const updateOutletLegalDocumentsSchema = createRoute({
+    tags: ["outlet"],
+    method: "patch",
+    path: "/outlet-legal-documents/:id",
+    middleware: [protect],
+    request: {
+        body: {
+            content: {
+                "multipart/form-data": {
+                    schema: updateOutletLegalDocumentSchema
+                },
+
+            },
+            description: "Outlet Legal Documents Updated",
+        },
+        params: IdUUIDParamsSchema
+    },
+    responses: {
+        [HttpStatusCode.OK]: jsonContent(
+            outletLegalDocumentsResponseSchema,
+            "Outlet Legal Documents Updated"
+        ),
+
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(insertOutletLegalDocumentSchema)],
+            "Validation error"
+        ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
+        ),
+        [HttpStatusCode.INTERNAL_SERVER_ERROR]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.INTERNAL_SERVER_ERROR),
+            HttpStatusPhrases.INTERNAL_SERVER_ERROR
+        )
     },
 })
 
@@ -80,6 +123,51 @@ export const createOutletDetailsSchema = createRoute({
     }
 })
 
+export const updateOutletDetailsSchema = createRoute({
+    tags: ["outlet"],
+    method: "put",
+    path: "/outlet-details",
+    middleware: [protect],
+    request: {
+        body: {
+            content: {
+                "multipart/form-data": {
+                    schema: modifyOutletDetailsSchema
+                },
+
+            },
+            description: "Outlet Details Updated",
+        },
+        query: z.object({
+            id: z.string().uuid().optional(),
+            bartenderId: z.string().uuid().optional(),
+            managerId: z.string().uuid().optional(),
+        }),
+    },
+    responses: {
+        [HttpStatusCode.OK]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.OK),
+            "Outlet Details Updated"
+        ),
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(modifyOutletDetailsSchema)],
+            "Validation error"
+        ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
+        ),
+        [HttpStatusCode.INTERNAL_SERVER_ERROR]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.INTERNAL_SERVER_ERROR),
+            HttpStatusPhrases.INTERNAL_SERVER_ERROR
+        )
+    }
+})
+
 export const createOutletTimingSchema = createRoute({
     tags: ["outlet"],
     method: "post",
@@ -104,6 +192,67 @@ export const createOutletTimingSchema = createRoute({
         [HttpStatusCode.BAD_REQUEST]: jsonContent(
             createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
             HttpStatusPhrases.BAD_REQUEST
+        ),
+    }
+})
+
+
+export const addOutletTimingSlotSchema = createRoute({
+    tags: ["outlet"],
+    method: "post",
+    path: "/outlet-timing/{id}/slot",
+    middleware: [protect],
+    request: {
+        params: IdUUIDParamsSchema,
+        body: jsonContent(
+            insertOutletTimingSlotSchema,
+            "Outlet Timing Slot Created"
+        )
+    },
+    responses: {
+        [HttpStatusCode.CREATED]: jsonContent(
+            outletTimingSlotResponseSchema,
+            HttpStatusPhrases.CREATED
+        ),
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(insertOutletTimingSlotSchema),
+            "Validation error"
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
+        ),
+        [HttpStatusCode.BAD_REQUEST]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
+            HttpStatusPhrases.BAD_REQUEST
+        ),
+    }
+})
+
+export const modifyOutletTimingSlotSchema = createRoute({
+    tags: ["outlet"],
+    method: "patch",
+    path: "/outlet-timing-slot/{id}",
+    middleware: [protect],
+    request: {
+        params: IdUUIDParamsSchema,
+        body: jsonContent(
+            updateOutletTimingSlotSchema,
+            "Outlet Timing Slot Updated"
+        )
+    },
+    responses: {
+        [HttpStatusCode.OK]: jsonContent(
+            outletTimingSlotResponseSchema,
+            HttpStatusPhrases.OK
+        ),
+        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(updateOutletTimingSlotSchema)],
+            "Validation error"
+        ),
+        [HttpStatusCode.NOT_FOUND]: jsonContent(
+            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
+            HttpStatusPhrases.NOT_FOUND
         ),
     }
 })
@@ -189,68 +338,10 @@ export const verifyOutletSchema = createRoute({
     }
 })
 
-export const addOutletTimingSlotSchema = createRoute({
-    tags: ["outlet"],
-    method: "post",
-    path: "/outlet-timing/{id}/slot",
-    middleware: [protect],
-    request: {
-        params: IdUUIDParamsSchema,
-        body: jsonContent(
-            insertOutletTimingSlotSchema,
-            "Outlet Timing Slot Created"
-        )
-    },
-    responses: {
-        [HttpStatusCode.CREATED]: jsonContent(
-            outletTimingSlotResponseSchema,
-            HttpStatusPhrases.CREATED
-        ),
-        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(insertOutletTimingSlotSchema),
-            "Validation error"
-        ),
-        [HttpStatusCode.NOT_FOUND]: jsonContent(
-            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
-            HttpStatusPhrases.NOT_FOUND
-        ),
-        [HttpStatusCode.BAD_REQUEST]: jsonContent(
-            createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
-            HttpStatusPhrases.BAD_REQUEST
-        ),
-    }
-})
-
-export const modifyOutletTimingSlotSchema = createRoute({
-    tags: ["outlet"],
-    method: "patch",
-    path: "/outlet-timing-slot/{id}",
-    middleware: [protect],
-    request: {
-        params: IdUUIDParamsSchema,
-        body: jsonContent(
-            updateOutletTimingSlotSchema,
-            "Outlet Timing Slot Updated"
-        )
-    },
-    responses: {
-        [HttpStatusCode.OK]: jsonContent(
-            outletTimingSlotResponseSchema,
-            HttpStatusPhrases.OK
-        ),
-        [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-            [createErrorSchema(IdUUIDParamsSchema), createErrorSchema(updateOutletTimingSlotSchema)],
-            "Validation error"
-        ),
-        [HttpStatusCode.NOT_FOUND]: jsonContent(
-            createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
-            HttpStatusPhrases.NOT_FOUND
-        ),
-    }
-})
-
-export type CreateOutletLegalDocumentsSchema = typeof createOutletLegalDocuments;
+export type CreateOutletLegalDocumentsSchema = typeof createOutletLegalDocumentsSchema;
+export type UpdateOutletLegalDocumentsSchema = typeof updateOutletLegalDocumentsSchema;
 export type CreateOutletDetailsSchema = typeof createOutletDetailsSchema;
+export type UpdateOutletDetailsSchema = typeof updateOutletDetailsSchema;
 export type CreateOutletTimingSchema = typeof createOutletTimingSchema;
 export type CreateOutletSchema = typeof createOutletSchema;
 export type GetOutletSchemaById = typeof getOutletSchemaById;

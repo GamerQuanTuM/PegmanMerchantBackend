@@ -2,6 +2,8 @@ import { pgTable, varchar, uuid, timestamp, integer, time } from "drizzle-orm/pg
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { dayOfWeekEnum } from "./enums";
+import { relations } from "drizzle-orm";
+import { outlet } from "./outlet.schema";
 
 export const infinityPass = pgTable("infinity_pass", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -16,6 +18,13 @@ export const infinityPass = pgTable("infinity_pass", {
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).defaultNow().$onUpdateFn(() => new Date()),
 })
+
+export const infinityPassRelations = relations(infinityPass, ({ one }) => ({
+    outlet: one(outlet, {
+        fields: [infinityPass.id],
+        references: [outlet.infinityPassId],
+    }),
+}));
 
 export const selectInfinityPassSchema = createSelectSchema(infinityPass)
 

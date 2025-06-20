@@ -1,6 +1,6 @@
 import { timestamp, uuid, pgTable, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { roleEnum } from "./enums"
 import { relations } from "drizzle-orm";
 import { ticket } from "./ticket.schema";

@@ -2,9 +2,9 @@ import * as HttpStatusCode from "stoker/http-status-codes"
 import { AppRouteHandler } from "../../types";
 import { db } from "../../db";
 import { outlet, outletBartender, outletLegalDocument, outletManager, outletsDetails, outletTiming, outletTimingSlot } from "../../db/schema";
-import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema, AddOutletTimingSlotSchema, UpdateOutletTimingSlotSchema } from "./outlet.route";
-import { eq } from "drizzle-orm";
+import { CreateOutletLegalDocumentsSchema, CreateOutletDetailsSchema, CreateOutletTimingSchema, CreateOutletSchema, GetOutletSchemaById, VerifyOutletSchema, AddOutletTimingSlotSchema, UpdateOutletTimingSlotSchema, UpdateOutletDetailsSchema, UpdateOutletLegalDocumentsSchema } from "./outlet.route";
 import { uploadFiles } from "../../lib/storage"
+import { eq } from "drizzle-orm";
 
 export const createOutletLegalDocuments: AppRouteHandler<CreateOutletLegalDocumentsSchema> = async (c) => {
     const { bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiImage, offShopLicenseImage, onShopLicenseImage, panCardImage } = c.req.valid("form");
@@ -329,11 +329,11 @@ export const verifyOutlet: AppRouteHandler<VerifyOutletSchema> = async (c) => {
     }, HttpStatusCode.OK);
 };
 
-export const addOutletTiming:AppRouteHandler<AddOutletTimingSlotSchema> = async (c) => {
+export const addOutletTiming: AppRouteHandler<AddOutletTimingSlotSchema> = async (c) => {
     const { id } = c.req.valid("param");
     const { day, openingTime, closingTime } = c.req.valid("json");
 
-   const outletTimingData = await db.query.outletTiming.findFirst({
+    const outletTimingData = await db.query.outletTiming.findFirst({
         where: (outletTiming, { eq }) => eq(outletTiming.id, id),
     });
 
@@ -367,7 +367,7 @@ export const addOutletTiming:AppRouteHandler<AddOutletTimingSlotSchema> = async 
 
 
 export const updateOutletTimingSlot: AppRouteHandler<UpdateOutletTimingSlotSchema> = async (c) => {
-   const { id } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const { day, openingTime, closingTime } = c.req.valid("json");
 
     const outletTimingSlotData = await db.query.outletTimingSlot.findFirst({
@@ -379,15 +379,209 @@ export const updateOutletTimingSlot: AppRouteHandler<UpdateOutletTimingSlotSchem
     }
 
     const [updatedOutletTimingSlot] = await db
-       .update(outletTimingSlot)
-       .set({ day, openingTime, closingTime })
-       .where(eq(outletTimingSlot.id, id))
-       .returning()
+        .update(outletTimingSlot)
+        .set({ day, openingTime, closingTime })
+        .where(eq(outletTimingSlot.id, id))
+        .returning()
 
-       const response = {
+    const response = {
         message: "Outlet timing slot updated successfully",
         data: updatedOutletTimingSlot
     }
 
     return c.json(response, HttpStatusCode.OK);
+}
+
+
+export const updateOutletDetails: AppRouteHandler<UpdateOutletDetailsSchema> = async (c) => {
+    const { id, bartenderId, managerId } = c.req.valid("query");
+    const {
+        address, contactNumber, country, latitude, longitude, name, pincode, outlet_images, bartenderContactNumber, bartenderName, managerContactNumber, managerEmail, managerName
+    } = c.req.valid("form");
+
+    if (id) {
+        const existingOutletDetails = await db.query.outletsDetails.findFirst({
+            where: (outletsDetails, { eq }) => eq(outletsDetails.id, id),
+        });
+
+        if (!existingOutletDetails) {
+            return c.json({ message: "Outlet details not found" }, HttpStatusCode.NOT_FOUND);
+        }
+
+        const updateData: Partial<typeof outletsDetails.$inferInsert> = {};
+
+
+        if (outlet_images && outlet_images?.length > 2) {
+            return c.json({
+                message: "Outlet images cannot be more than 2",
+            }, HttpStatusCode.BAD_REQUEST);
+        }
+
+        let image_urls: string[] = [];
+
+        //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
+        if (outlet_images) {
+            image_urls = await uploadFiles(outlet_images);
+        }
+
+        if (address) updateData.address = address;
+        if (contactNumber) updateData.contactNumber = contactNumber;
+        if (country) updateData.country = country;
+        if (latitude) updateData.latitude = latitude;
+        if (longitude) updateData.longitude = longitude;
+        if (name) updateData.name = name;
+        if (pincode) updateData.pincode = pincode;
+        if (outlet_images) updateData.outletImageUrls = image_urls;
+
+        const [updatedOutletDetails] = await db
+            .update(outletsDetails)
+            .set(updateData)
+            .where(eq(outletsDetails.id, id))
+            .returning();
+
+        if (!updatedOutletDetails) {
+            return c.json({ message: "Failed to update outlet details" }, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    if (bartenderId) {
+        const existingBartenderDetails = await db.query.outletBartender.findFirst({
+            where: (outletBartender, { eq }) => eq(outletBartender.id, bartenderId)
+        });
+
+        if (!existingBartenderDetails) {
+            return c.json({ message: "Bartender details not found" }, HttpStatusCode.NOT_FOUND);
+        }
+
+        const updateData: Partial<typeof outletsDetails.$inferInsert> = {};
+
+        if (bartenderContactNumber) updateData.contactNumber = bartenderContactNumber;
+        if (bartenderName) updateData.name = bartenderName;
+
+        const [updatedBartenderDetails] = await db
+            .update(outletBartender)
+            .set(updateData)
+            .where(eq(outletBartender.id, bartenderId))
+            .returning();
+
+        if (!updatedBartenderDetails) {
+            return c.json({ message: "Failed to update bartender details" }, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    if (managerId) {
+        const existingManagerDetails = await db.query.outletManager.findFirst({
+            where: (outletManager, { eq }) => eq(outletManager.id, managerId)
+        });
+
+        if (!existingManagerDetails) {
+            return c.json({
+                message: "Manager details not found"
+            }, HttpStatusCode.NOT_FOUND);
+        }
+
+        const updateData: Partial<typeof outletManager.$inferInsert> = {};
+
+        if (managerContactNumber) updateData.contactNumber = managerContactNumber;
+        if (managerName) updateData.name = managerName;
+        if (managerEmail) updateData.email = managerEmail;
+
+        const [updatedManagerDetails] = await db
+            .update(outletManager)
+            .set(updateData)
+            .where(eq(outletManager.id, managerId))
+            .returning();
+
+        if (!updatedManagerDetails) {
+            return c.json({
+                message: "Failed to update manager details"
+            }, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Return success response
+    return c.json({ message: "Outlet details updated successfully" }, HttpStatusCode.OK);
+};
+
+export const updateLegalDocuments: AppRouteHandler<UpdateOutletLegalDocumentsSchema> = async (c) => {
+    const { id } = c.req.valid("param");
+
+    const { bankAccountType, fssaiNumber, gstNumber, bankAccountNumber, bankIfscCode, panCardNumber, fssaiImage, offShopLicenseImage, onShopLicenseImage, panCardImage } = c.req.valid("form");
+
+    // Check if the document exists
+    const [existingDocument] = await db
+        .select()
+        .from(outletLegalDocument)
+        .where(eq(outletLegalDocument.id, id))
+        .limit(1);
+
+    if (!existingDocument) {
+        return c.json(
+            { message: "Outlet legal document not found" },
+            HttpStatusCode.NOT_FOUND
+        );
+    }
+
+    //TODO: UPLOAD FILES TO S3 STORAGE AND GET THE URLS
+
+    let fssaiUrl = "";
+    let offShopLicenseUrl = "";
+    let onShopLicenseUrl = "";
+    let panCardUrl = "";
+
+    if (fssaiImage) {
+        const [url] = await uploadFiles([fssaiImage]);
+        fssaiUrl = url;
+    }
+
+    if (offShopLicenseImage) {
+        const [url] = await uploadFiles([offShopLicenseImage]);
+        offShopLicenseUrl = url;
+    }
+
+    if (onShopLicenseImage) {
+        const [url] = await uploadFiles([onShopLicenseImage]);
+        onShopLicenseUrl = url;
+    }
+
+    if (panCardImage) {
+        const [url] = await uploadFiles([panCardImage]);
+        panCardUrl = url;
+    }
+
+    const updateData: Partial<typeof outletLegalDocument.$inferInsert> = {};
+
+    if (bankAccountType !== undefined) updateData.bankAccountType = bankAccountType;
+    if (fssaiNumber !== undefined) updateData.fssaiNumber = fssaiNumber;
+    if (gstNumber !== undefined) updateData.gstNumber = gstNumber;
+    if (bankAccountNumber !== undefined) updateData.bankAccountNumber = bankAccountNumber;
+    if (bankIfscCode !== undefined) updateData.bankIfscCode = bankIfscCode;
+    if (panCardNumber !== undefined) updateData.panCardNumber = panCardNumber;
+    if (fssaiUrl) updateData.fssaiUrl = fssaiUrl;
+    if (offShopLicenseUrl) updateData.offShopLicenseUrl = offShopLicenseUrl;
+    if (onShopLicenseUrl) updateData.onShopLicenseUrl = onShopLicenseUrl;
+    if (panCardUrl) updateData.panCardUrl = panCardUrl;
+
+    // Update the document in the database
+    const [updatedDocument] = await db
+        .update(outletLegalDocument)
+        .set(updateData)
+        .where(eq(outletLegalDocument.id, id))
+        .returning();
+
+    if (!updatedDocument) {
+        return c.json(
+            { message: "Failed to update outlet legal document" },
+            HttpStatusCode.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    return c.json(
+        {
+            message: "Outlet legal document updated successfully",
+            data: updatedDocument
+        },
+        HttpStatusCode.OK // Note: Using OK instead of CREATED for updates
+    );
+
 }
