@@ -499,8 +499,30 @@ export const updateOutletDetails: AppRouteHandler<UpdateOutletDetailsSchema> = a
         }
     }
 
+    // Get the outlet details, bartender, manager
+    const outletDetailsData = await db.query.outletsDetails.findFirst({
+        where: (outletsDetails, { eq }) => id ? eq(outletsDetails.id, id) : undefined,
+    });
+
+    const bartenderDetailsData = bartenderId ? await db.query.outletBartender.findFirst({
+        where: (outletBartender, { eq }) => eq(outletBartender?.id, bartenderId),
+    }) : undefined;
+
+    const managerDetailsData = await db.query.outletManager.findFirst({
+        where: (outletManager, { eq }) => managerId ? eq(outletManager?.id, managerId) : undefined,
+    });
+
+    const resp = {
+        message: "Outlet details updated successfully",
+        data: {
+            details: outletDetailsData ?? undefined,
+            bartender: bartenderDetailsData ?? undefined,
+            manager: managerDetailsData ?? undefined,
+        }
+    }
+
     // Return success response
-    return c.json({ message: "Outlet details updated successfully" }, HttpStatusCode.OK);
+    return c.json(resp, HttpStatusCode.OK);
 };
 
 export const updateLegalDocuments: AppRouteHandler<UpdateOutletLegalDocumentsSchema> = async (c) => {

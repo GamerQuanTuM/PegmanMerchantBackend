@@ -78,8 +78,8 @@ export const fullOutletDetailsInsertSchema = insertOutletsDetailsSchema
 export const outletsDetailsResponseSchema = z.object({
   message: z.string(),
   data: z.object({
-    details: selectOutletsDetailsSchema,
-    manager: selectOutletManagerSchema,
+    details: selectOutletsDetailsSchema.optional(),
+    manager: selectOutletManagerSchema.optional(),
     bartender: selectOutletBartenderSchema.optional()
   })
 });

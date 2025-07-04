@@ -146,7 +146,7 @@ export const updateOutletDetailsSchema = createRoute({
     },
     responses: {
         [HttpStatusCode.OK]: jsonContent(
-            createMessageObjectSchema(HttpStatusPhrases.OK),
+            outletsDetailsResponseSchema,
             "Outlet Details Updated"
         ),
         [HttpStatusCode.UNPROCESSABLE_ENTITY]: jsonContentOneOf(

@@ -1,13 +1,16 @@
 
 import { pgTable, uuid, timestamp, varchar, integer, boolean, date } from "drizzle-orm/pg-core";
-import { users } from "./user.schema";
-import { collection } from "./collection.schema";
 import { relations } from "drizzle-orm";
+import { users } from "./user.schema";
+import { tierEnum } from "./enums";
+// import { collection } from "./collection.schema";
 
 export const ticket = pgTable("ticket", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("user_id").references(() => users.id).notNull(),
-    collectionId: uuid("collection_id").references(() => collection.id).notNull(),
+    type: tierEnum("tier").notNull(),
+    collectionId: uuid("collection_id"),
+    // .references(() => collection.id).notNull(),
     isExpired: boolean("is_expired").notNull().default(false),
     bookingDate: date("booking_date").notNull(),
     createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
@@ -26,7 +29,7 @@ export const ticketItem = pgTable("ticket_item", {
 
 export const ticketRelations = relations(ticket, ({ one, many }) => ({
     user: one(users, { fields: [ticket.userId], references: [users.id] }),
-    collection: one(collection, { fields: [ticket.collectionId], references: [collection.id] }),
+    // collection: one(collection, { fields: [ticket.collectionId], references: [collection.id] }),
     items: many(ticketItem),
 }));
 

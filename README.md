@@ -259,7 +259,8 @@ Stores information about user tickets for collections.
 |-------|------|-------------|
 | id | UUID | Primary key |
 | userId | UUID | Reference to user |
-| collectionId | UUID | Reference to collection |
+| collectionId | UUID | Collection UUID |
+| type | tier | Collection tier |
 | createdAt | TIMESTAMP | Creation timestamp |
 | updatedAt | TIMESTAMP | Last update timestamp |
 
@@ -302,11 +303,14 @@ Stores details about items in a ticket.
 
 ### Collection Relationships
 - A collection can have many liquors
-- A collection can have many tickets
+- A collection can be referenced by an outlet as a gold collection
+- A collection can be referenced by an outlet as a silver collection
+- A collection can be referenced by an outlet as a crystal collection
+<!-- - A collection can have many tickets -->
 
 ### Ticket Relationships
 - A ticket belongs to one user
-- A ticket belongs to one collection
+<!-- - A ticket belongs to one collection -->
 - A ticket can have many ticket items
 
 ### Liquor Relationships

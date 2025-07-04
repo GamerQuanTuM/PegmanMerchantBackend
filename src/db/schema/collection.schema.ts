@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { liquor } from "./liquor.schema";
 import { tierEnum } from "./enums";
-import { ticket } from "./ticket.schema";
+// import { ticket } from "./ticket.schema";
 import { outlet } from "./outlet.schema";
 
 export const collection = pgTable("collection", {
@@ -22,7 +22,7 @@ export const collection = pgTable("collection", {
 
 export const collectionRelations = relations(collection, ({ many, one }) => ({
   liquors: many(liquor),
-  tickets: many(ticket),
+  // tickets: many(ticket),
   goldOutlet: one(outlet, {
     fields: [collection.id],
     references: [outlet.goldCollectionId],
